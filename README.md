@@ -8,24 +8,25 @@ Organized into dedicated schemas for scalability and clarity:
 
 - course – Managing courses and learning topics - `courses`- `course_topics`- `course_statuses`
 - finance – Tracking income and expenses `finances`, `finance_categories`, `finance_types`
--- finance – Managing financial records, categories, and types (tables: `finances`, `finance_categories`, `finance_types`).
-- courses – Organizing courses, topics, and statuses (tables: `courses`, `course_topics`, `course_statuses`).
-- habits – Tracking habits and progress (tables: `habits`, `habit_logs`, `habit_categories`).
+- habits – Tracking habits and categories (tables: `habits`, `habit_categories`, `habit_logs`).
+- todo – Managing tasks and task categories (tables: `todos`, `todo_categories`, `task_statuses`, `task_priorities`).
+- trips – Planning trips, routes, and expenses (tables: `trips`, `trip_routes`, `trip_expenses`).
 
-⚙️ Intelligent Features
+## ⚙️ Intelligent Features
 
 Triggers and functions are used for automatic updates of statuses, data correctness, and dates:
 
-- update_course_status: Updates the course status when topics change..
-- check_finance_amount: Checks the correctness of the amount for income and expenses.
-- set_completed_date: Automatically sets the completion date for tasks.
-- update_updated_at: Updates updated_at on changes.
+- `update_course_status` — Updates the course status when topics are modified.
+- `check_finance_amount` — Validates the correctness of amounts for incomes and expenses.
+- `set_completed_date` — Automatically sets the completion date for tasks.
+- `update_updated_at` — Updates the `updated_at` field when changes occur.
 
-📊 Built‑In Analytics Views
-- Course Progress – Monitor learning milestones (course_progress).
-- Financial Summary – Monthly income/expense breakdown (financial_summary).
-- Final Grades – Consolidated academic performance  (course_grades).
-- Trip Costs – Expense tracking per trip (trip_costs).
+## 📊 Built‑In Analytics Views
+
+- `course_progress` — Monitor learning milestones.
+- `financial_summary` — Monthly income/expense breakdown.
+- `course_grades` — Consolidated academic performance.
+- `trip_costs` — Expense tracking per trip.
 
 
 ## 🚀 Quick Start
