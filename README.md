@@ -8,9 +8,9 @@ Organized into dedicated schemas for scalability and clarity:
 
 - course – Managing courses and learning topics - `courses`- `course_topics`- `course_statuses`
 - finance – Tracking income and expenses `finances`, `finance_categories`, `finance_types`
-- habits – Tracking habits and categories (tables: habits, habit_categories, habit_logs).
-- todo – Managing tasks and task categories (tables: todos, todo_categories, task_statuses, task_priorities).
-- trips – Planning trips, routes, and expenses (tables: trips, trip_routes, trip_expenses).
+-- finance – Managing financial records, categories, and types (tables: `finances`, `finance_categories`, `finance_types`).
+- courses – Organizing courses, topics, and statuses (tables: `courses`, `course_topics`, `course_statuses`).
+- habits – Tracking habits and progress (tables: `habits`, `habit_logs`, `habit_categories`).
 
 ⚙️ Intelligent Features
 
