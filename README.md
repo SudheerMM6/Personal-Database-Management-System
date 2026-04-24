@@ -77,11 +77,41 @@ bash scripts/validate.sh --cleanup
 
 The validation script uses `ON_ERROR_STOP=on` so any SQL error fails fast. By default, it validates the English-clean `schema.sql`.
 
+## 🧪 Unit Tests (pgTAP)
+
+The repository includes comprehensive pgTAP unit tests that validate schema structure:
+
+- **01_schemas.pg** - All 6 schemas exist
+- **02_tables.pg** - Anchor tables in each schema exist
+- **03_columns.pg** - Critical columns with correct data types
+- **04_constraints.pg** - Primary keys and foreign keys present
+- **05_indexes.pg** - Indexes on key tables
+- **06_functions.pg** - Trigger functions and triggers installed
+- **07_views.pg** - Analytics views exist and are queryable
+
+**Run locally:**
+
+Windows:
+```powershell
+powershell scripts/run_pgtap.ps1
+```
+
+macOS/Linux:
+```bash
+bash scripts/run_pgtap.sh
+```
+
+**CI Pipeline includes:**
+1. Cyrillic character scan
+2. Schema import validation (smoke tests)
+3. Invalid object check
+4. **pgTAP unit tests**
+
 ## 🔒 CI Status
 
 ![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
 
-CI automatically validates that the schema imports cleanly into PostgreSQL 16 on every push and PR.
+CI runs full validation: cyrillic scan → import → smoke tests → invalid objects → pgTAP tests on every push and PR.
 
 ## Documentation
 

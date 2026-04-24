@@ -1,0 +1,18 @@
+-- Test: Functions and triggers exist
+-- Verify trigger functions are present
+
+BEGIN;
+SELECT plan(6);
+
+-- Trigger functions should exist in respective schemas
+SELECT has_function('course', 'update_course_status', ARRAY[]::text[], 'course.update_course_status() function should exist');
+SELECT has_function('finance', 'check_finance_amount', ARRAY[]::text[], 'finance.check_finance_amount() function should exist');
+SELECT has_function('todo', 'set_completed_date', ARRAY[]::text[], 'todo.set_completed_date() function should exist');
+SELECT has_function('course', 'update_updated_at', ARRAY[]::text[], 'course.update_updated_at() function should exist');
+
+-- Check that triggers are actually installed on tables
+SELECT has_trigger('course', 'courses', 'trigger_update_course_status', 'course.courses should have update trigger');
+SELECT has_trigger('todo', 'todos', 'trigger_set_completed_date', 'todo.todos should have completed_date trigger');
+
+SELECT * FROM finish();
+ROLLBACK;

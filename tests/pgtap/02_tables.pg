@@ -1,0 +1,34 @@
+-- Test: Tables exist
+-- Verify key tables exist in each schema
+
+BEGIN;
+SELECT plan(16);
+
+-- course schema tables
+SELECT has_table('course', 'courses', 'Table course.courses should exist');
+SELECT has_table('course', 'course_topics', 'Table course.course_topics should exist');
+SELECT has_table('course', 'course_statuses', 'Table course.course_statuses should exist');
+
+-- finance schema tables
+SELECT has_table('finance', 'finances', 'Table finance.finances should exist');
+SELECT has_table('finance', 'finance_categories', 'Table finance.finance_categories should exist');
+SELECT has_table('finance', 'finance_types', 'Table finance.finance_types should exist');
+
+-- habits schema tables
+SELECT has_table('habits', 'habits', 'Table habits.habits should exist');
+SELECT has_table('habits', 'habit_categories', 'Table habits.habit_categories should exist');
+SELECT has_table('habits', 'habit_logs', 'Table habits.habit_logs should exist');
+SELECT has_table('habits', 'habit_frequencies', 'Table habits.habit_frequencies should exist');
+
+-- todo schema tables
+SELECT has_table('todo', 'todos', 'Table todo.todos should exist');
+SELECT has_table('todo', 'todo_categories', 'Table todo.todo_categories should exist');
+SELECT has_table('todo', 'task_statuses', 'Table todo.task_statuses should exist');
+SELECT has_table('todo', 'task_priorities', 'Table todo.task_priorities should exist');
+
+-- trips schema tables
+SELECT has_table('trips', 'trips', 'Table trips.trips should exist');
+SELECT has_table('trips', 'trip_routes', 'Table trips.trip_routes should exist');
+
+SELECT * FROM finish();
+ROLLBACK;

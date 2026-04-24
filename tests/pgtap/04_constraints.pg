@@ -1,0 +1,31 @@
+-- Test: Constraints exist
+-- Verify primary keys and foreign keys on anchor tables
+
+BEGIN;
+SELECT plan(16);
+
+-- Primary keys on anchor tables
+SELECT has_pk('course', 'courses', 'course.courses should have a primary key');
+SELECT has_pk('course', 'course_topics', 'course.course_topics should have a primary key');
+SELECT has_pk('finance', 'finances', 'finance.finances should have a primary key');
+SELECT has_pk('habits', 'habits', 'habits.habits should have a primary key');
+SELECT has_pk('todo', 'todos', 'todo.todos should have a primary key');
+SELECT has_pk('trips', 'trips', 'trips.trips should have a primary key');
+SELECT has_pk('user', 'users', 'user.users should have a primary key');
+
+-- Verify specific primary key column names
+SELECT col_is_pk('course', 'courses', 'course_id', 'course.courses.course_id should be primary key');
+SELECT col_is_pk('user', 'users', 'user_id', 'user.users.user_id should be primary key');
+
+-- Foreign keys (at least some should exist)
+SELECT has_fk('course', 'course_topics', 'course.course_topics should have foreign keys');
+SELECT has_fk('finance', 'finances', 'finance.finances should have foreign keys');
+SELECT has_fk('habits', 'habits', 'habits.habits should have foreign keys');
+SELECT has_fk('todo', 'todos', 'todo.todos should have foreign keys');
+SELECT has_fk('trips', 'trips', 'trips.trips should have foreign keys');
+
+-- Check that finance_categories has a primary key
+SELECT has_pk('finance', 'finance_categories', 'finance.finance_categories should have a primary key');
+
+SELECT * FROM finish();
+ROLLBACK;

@@ -1,0 +1,21 @@
+-- Test: Indexes exist
+-- Verify key tables have indexes for performance
+
+BEGIN;
+SELECT plan(8);
+
+-- Tables should have indexes (at minimum, primary key indexes)
+SELECT has_index('course', 'courses', 'courses_pkey', 'course.courses should have primary key index');
+SELECT has_index('finance', 'finances', 'finances_pkey', 'finance.finances should have primary key index');
+SELECT has_index('habits', 'habits', 'habits_pkey', 'habits.habits should have primary key index');
+SELECT has_index('todo', 'todos', 'todos_pkey', 'todo.todos should have primary key index');
+SELECT has_index('trips', 'trips', 'trips_pkey', 'trips.trips should have primary key index');
+SELECT has_index('user', 'users', 'users_pkey', 'user.users should have primary key index');
+
+-- Check for potential FK indexes (common naming pattern)
+-- Note: Not all FKs may be indexed, but check for at least one
+SELECT is_indexed('course', 'course_topics', 'course_id', 'course.course_topics.course_id should be indexed');
+SELECT is_indexed('finance', 'finances', 'user_id', 'finance.finances.user_id should be indexed');
+
+SELECT * FROM finish();
+ROLLBACK;

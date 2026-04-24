@@ -1,0 +1,19 @@
+-- Test: Schemas exist
+-- Verify all expected application schemas are present
+
+BEGIN;
+SELECT plan(7);
+
+-- Test 1: Check that schemas exist
+SELECT has_schema('course', 'Schema course should exist');
+SELECT has_schema('finance', 'Schema finance should exist');
+SELECT has_schema('habits', 'Schema habits should exist');
+SELECT has_schema('todo', 'Schema todo should exist');
+SELECT has_schema('trips', 'Schema trips should exist');
+SELECT has_schema('user', 'Schema user should exist');
+
+-- Test 7: Check that user schema is correctly quoted (it's a reserved word)
+SELECT schema_owner_is('user', 'postgres', 'Schema user should be owned by postgres');
+
+SELECT * FROM finish();
+ROLLBACK;

@@ -1,0 +1,39 @@
+-- Test: Critical columns exist with correct types
+-- Verify anchor tables have expected key columns
+
+BEGIN;
+SELECT plan(20);
+
+-- course.courses key columns
+SELECT has_column('course', 'courses', 'course_id', 'course.courses should have course_id column');
+SELECT col_type_is('course', 'courses', 'course_id', 'integer', 'course.courses.course_id should be integer');
+SELECT has_column('course', 'courses', 'title', 'course.courses should have title column');
+SELECT col_type_is('course', 'courses', 'title', 'character varying(100)', 'course.courses.title should be varchar(100)');
+
+-- finance.finances key columns
+SELECT has_column('finance', 'finances', 'finance_id', 'finance.finances should have finance_id column');
+SELECT has_column('finance', 'finances', 'amount', 'finance.finances should have amount column');
+SELECT col_type_is('finance', 'finances', 'amount', 'numeric(10,2)', 'finance.finances.amount should be numeric(10,2)');
+
+-- habits.habits key columns
+SELECT has_column('habits', 'habits', 'habit_id', 'habits.habits should have habit_id column');
+SELECT has_column('habits', 'habits', 'name', 'habits.habits should have name column');
+
+-- todo.todos key columns
+SELECT has_column('todo', 'todos', 'todo_id', 'todo.todos should have todo_id column');
+SELECT has_column('todo', 'todos', 'title', 'todo.todos should have title column');
+SELECT has_column('todo', 'todos', 'completed_date', 'todo.todos should have completed_date column');
+
+-- trips.trips key columns
+SELECT has_column('trips', 'trips', 'trip_id', 'trips.trips should have trip_id column');
+SELECT has_column('trips', 'trips', 'name', 'trips.trips should have name column');
+
+-- user.users key columns (in quoted "user" schema)
+SELECT has_column('user', 'users', 'user_id', 'user.users should have user_id column');
+SELECT has_column('user', 'users', 'username', 'user.users should have username column');
+SELECT has_column('user', 'users', 'email', 'user.users should have email column');
+SELECT col_type_is('user', 'users', 'username', 'character varying(50)', 'user.users.username should be varchar(50)');
+SELECT col_type_is('user', 'users', 'email', 'character varying(100)', 'user.users.email should be varchar(100)');
+
+SELECT * FROM finish();
+ROLLBACK;
