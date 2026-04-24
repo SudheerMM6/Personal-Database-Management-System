@@ -31,7 +31,17 @@ Triggers and functions are used for automatic updates of statuses, data correctn
 ## 🚀 Quick Start
 
 1. Deploy the database in PostgreSQL version 16 or higher.
-2. Run the SQL script:  
+2. Run the SQL script:
    ```bash
-   psql -U your_user -d your_db -f Personal_base.sql
+   psql -U your_user -d your_db -f "Personal base.sql"
+   ```
 
+## Requirements
+
+- PostgreSQL 16 or higher
+- psql command-line tool
+
+## Documentation
+
+- See `ER.png` for the Entity Relationship Diagram
+- Schema documentation is embedded in the SQL file as comments
