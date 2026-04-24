@@ -1,0 +1,97 @@
+name: CI - Database Schema Validation
+
+on:
+  push:
+    branches: [ main, master, hardening/* ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  validate-schema:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Wait for PostgreSQL
+      run: |
+        for i in {1..30}; do
+          pg_isready -h localhost -p 5432 -U postgres && break
+          echo "Waiting for PostgreSQL..."
+          sleep 1
+        done
+
+    - name: Create test database
+      env:
+        PGPASSWORD: postgres
+      run: |
+        psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE personalbase_ci;"
+
+    - name: Import SQL dump
+      env:
+        PGPASSWORD: postgres
+        ON_ERROR_STOP: "on"
+      run: |
+        echo "Importing Personal base.sql..."
+        psql --set ON_ERROR_STOP=on --single-transaction \
+             -h localhost -p 5432 -U postgres \
+             -d personalbase_ci \
+             -f "Personal base.sql"
+
+    - name: Run schema smoke tests
+      env:
+        PGPASSWORD: postgres
+      run: |
+        echo "Running smoke tests..."
+        psql -h localhost -p 5432 -U postgres -d personalbase_ci \
+             -f scripts/schema_smoke_tests.sql
+
+    - name: Check for invalid objects
+      env:
+        PGPASSWORD: postgres
+      run: |
+        echo "Checking for invalid database objects..."
+        INVALID_COUNT=$(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "
+          SELECT count(*) 
+          FROM pg_class c 
+          JOIN pg_namespace n ON n.oid = c.relnamespace 
+          WHERE c.relpersistence != 't' 
+          AND c.relkind IN ('r', 'v', 'm', 'S', 'f') 
+          AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
+          AND NOT c.relhasrules 
+          AND c.relfilenode = 0;
+        " | xargs)
+        
+        if [ "$INVALID_COUNT" -eq "0" ]; then
+          echo "✓ No invalid objects found"
+        else
+          echo "✗ Found $INVALID_COUNT invalid objects"
+          exit 1
+        fi
+
+    - name: Schema validation summary
+      env:
+        PGPASSWORD: postgres
+      run: |
+        echo "=== Schema Validation Summary ==="
+        echo "Tables: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
+        echo "Schemas: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.schemata WHERE schema_name IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
+        echo "Functions: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
+        echo "Views: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.views WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
+        echo "=== CI PASSED ==="

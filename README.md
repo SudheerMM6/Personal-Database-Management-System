@@ -41,7 +41,36 @@ Triggers and functions are used for automatic updates of statuses, data correctn
 - PostgreSQL 16 or higher
 - psql command-line tool
 
+## ✅ One-Command Validation
+
+Validate that the SQL imports cleanly:
+
+**Windows:**
+```powershell
+powershell scripts/validate.ps1
+```
+
+**macOS/Linux:**
+```bash
+bash scripts/validate.sh
+```
+
+**With Docker (recommended):**
+```bash
+docker-compose up -d
+bash scripts/validate.sh --cleanup
+```
+
+The validation script uses `ON_ERROR_STOP=on` so any SQL error fails fast.
+
+## 🔒 CI Status
+
+![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
+
+CI automatically validates that the schema imports cleanly into PostgreSQL 16 on every push and PR.
+
 ## Documentation
 
 - See `ER.png` for the Entity Relationship Diagram
 - Schema documentation is embedded in the SQL file as comments
+- See `scripts/schema_smoke_tests.sql` for automated validation queries
