@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Validates that Personal base.sql imports cleanly into PostgreSQL.
-# 
+# Validates that schema.sql imports cleanly into PostgreSQL.
+#
 # Usage:
-#   ./scripts/validate.sh                    # Use defaults
+#   ./scripts/validate.sh                    # Validate schema.sql (default)
+#   ./scripts/validate.sh --with-data        # Validate full dump with sample data
 #   ./scripts/validate.sh --cleanup          # Cleanup containers after
-#   DB_PASSWORD=mysecret ./validate.sh       # Custom password
+#   DB_PASSWORD=mysecret ./validate.sh     # Custom password
 #
 # Exit codes: 0 = PASS, 1 = FAIL
 #
@@ -13,7 +14,7 @@
 set -euo pipefail
 
 # Configuration with defaults
-SQL_FILE="${SQL_FILE:-Personal base.sql}"
+SQL_FILE="${SQL_FILE:-schema.sql}"
 DB_NAME="${DB_NAME:-personalbase_ci}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
@@ -21,6 +22,7 @@ DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 CLEANUP="${CLEANUP:-false}"
 SKIP_DOCKER="${SKIP_DOCKER:-false}"
+WITH_DATA="${WITH_DATA:-false}"
 
 # Counters
 PASSED=0
@@ -198,6 +200,11 @@ while [[ $# -gt 0 ]]; do
             SKIP_DOCKER="true"
             shift
             ;;
+        --with-data)
+            WITH_DATA="true"
+            SQL_FILE="Personal base.sql"
+            shift
+            ;;
         *)
             echo "Unknown option: $1"
             exit 1
@@ -206,7 +213,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Main execution
+if [[ "$WITH_DATA" == "true" ]]; then
+    SOURCE_TYPE="FULL DUMP (with data)"
+else
+    SOURCE_TYPE="SCHEMA ONLY (English-clean)"
+fi
+
 echo -e "${WHITE}=== PersonalBase SQL Validation ===${NC}"
+echo "Source: $SOURCE_TYPE"
 echo "SQL File: $SQL_FILE"
 echo "Database: $DB_NAME on $DB_HOST:$DB_PORT"
 

@@ -28,13 +28,22 @@ Triggers and functions are used for automatic updates of statuses, data correctn
 - Trip Costs – Expense tracking per trip (trip_costs).
 
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Default: English-Clean Schema)
 
 1. Deploy the database in PostgreSQL version 16 or higher.
-2. Run the SQL script:
+2. Run the schema-only SQL script (English-clean, no sample data):
    ```bash
-   psql -U your_user -d your_db -f "Personal base.sql"
+   psql -U your_user -d your_db -f schema.sql
    ```
+
+### Full Dump with Sample Data (Optional)
+
+For the complete dump including sample data:
+```bash
+psql -U your_user -d your_db -f "Personal base.sql"
+```
+
+See `docs/TRANSLATION_NOTES.md` for details on the English-clean default.
 
 ## Requirements
 
@@ -55,13 +64,18 @@ powershell scripts/validate.ps1
 bash scripts/validate.sh
 ```
 
+**Validate full dump with sample data:**
+```bash
+bash scripts/validate.sh --with-data
+```
+
 **With Docker (recommended):**
 ```bash
 docker-compose up -d
 bash scripts/validate.sh --cleanup
 ```
 
-The validation script uses `ON_ERROR_STOP=on` so any SQL error fails fast.
+The validation script uses `ON_ERROR_STOP=on` so any SQL error fails fast. By default, it validates the English-clean `schema.sql`.
 
 ## 🔒 CI Status
 
@@ -72,5 +86,7 @@ CI automatically validates that the schema imports cleanly into PostgreSQL 16 on
 ## Documentation
 
 - See `ER.png` for the Entity Relationship Diagram
-- Schema documentation is embedded in the SQL file as comments
+- Schema documentation is embedded in the SQL files as comments
+- See `docs/TRANSLATION_NOTES.md` for translation notes and SQL file differences
 - See `scripts/schema_smoke_tests.sql` for automated validation queries
+- See `scripts/scan_cyrillic.sh` for the Cyrillic guard script

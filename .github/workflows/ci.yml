@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, master ]
 
+env:
+  # Default: validate English-clean schema.sql
+  # Full dump with sample data is in "Personal base.sql"
+
 jobs:
   validate-schema:
     runs-on: ubuntu-latest
@@ -29,6 +33,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Scan for Cyrillic characters
+      run: |
+        echo "=== Scanning for Cyrillic in English-clean files ==="
+        chmod +x scripts/scan_cyrillic.sh
+        scripts/scan_cyrillic.sh
+        echo "=== Cyrillic scan passed ==="
+
     - name: Wait for PostgreSQL
       run: |
         for i in {1..30}; do
@@ -43,16 +54,16 @@ jobs:
       run: |
         psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE personalbase_ci;"
 
-    - name: Import SQL dump
+    - name: Import SQL schema (English-clean)
       env:
         PGPASSWORD: postgres
         ON_ERROR_STOP: "on"
       run: |
-        echo "Importing Personal base.sql..."
+        echo "Importing schema.sql (English-clean, schema only)..."
         psql --set ON_ERROR_STOP=on --single-transaction \
              -h localhost -p 5432 -U postgres \
              -d personalbase_ci \
-             -f "Personal base.sql"
+             -f schema.sql
 
     - name: Run schema smoke tests
       env:

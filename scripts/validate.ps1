@@ -1,13 +1,15 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Validates that Personal base.sql imports cleanly into PostgreSQL.
+    Validates that schema.sql imports cleanly into PostgreSQL.
 .DESCRIPTION
     1. Starts PostgreSQL via docker-compose (if available)
     2. Creates temporary database
-    3. Imports the dump with ON_ERROR_STOP=on
+    3. Imports schema.sql with ON_ERROR_STOP=on (English-clean default)
     4. Runs schema smoke tests
     5. Reports PASS/FAIL
+    
+    Use -WithData to validate the original dump with sample data.
 .NOTES
     Requires: psql, docker-compose (optional)
     Exit codes: 0 = PASS, 1 = FAIL
@@ -15,15 +17,21 @@
 
 [CmdletBinding()]
 param(
-    [string]$SqlFile = "Personal base.sql",
+    [string]$SqlFile = "schema.sql",
     [string]$DbName = "personalbase_ci",
     [string]$DbUser = "postgres",
     [string]$DbPassword = "postgres",
     [string]$DbHost = "localhost",
     [int]$DbPort = 5432,
     [switch]$SkipDocker,
-    [switch]$Cleanup
+    [switch]$Cleanup,
+    [switch]$WithData
 )
+
+# If -WithData specified, use the original full dump
+if ($WithData) {
+    $SqlFile = "Personal base.sql"
+}
 
 $ErrorActionPreference = "Stop"
 $script:DockerStarted = $false
@@ -206,7 +214,9 @@ AND c.relfilenode = 0;
 
 # Main execution
 try {
+    $sourceType = if ($WithData) { "FULL DUMP (with data)" } else { "SCHEMA ONLY (English-clean)" }
     Write-Host "=== PersonalBase SQL Validation ===" -ForegroundColor White
+    Write-Host "Source: $sourceType"
     Write-Host "SQL File: $SqlFile"
     Write-Host "Database: $DbName on $DbHost:$DbPort"
     
