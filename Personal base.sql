@@ -554,6 +554,21 @@ ALTER SEQUENCE course.courses_course_id_seq OWNED BY course.courses.course_id;
 
 COMMENT ON SEQUENCE course.courses_course_id_seq IS 'Sequence for generating unique identifiers (course_id) in the courses table, storing user courses.';
 
+--
+-- TOC entry 224 (class 1259 OID 26513)
+-- Name: finance_categories; Type: TABLE; Schema: finance; Owner: postgres
+--
+
+CREATE TABLE finance.finance_categories (
+    category_id integer NOT NULL,
+    user_id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    type_id integer NOT NULL
+);
+
+
 ALTER TABLE finance.finance_categories OWNER TO postgres;
 
 --
