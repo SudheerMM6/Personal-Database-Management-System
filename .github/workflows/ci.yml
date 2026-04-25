@@ -65,12 +65,20 @@ jobs:
       run: |
         psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE personalbase_ci;"
 
-    - name: Run validate (import + smoke tests)
+    - name: Import schema and run smoke tests
       env:
         PGPASSWORD: postgres
       run: |
-        # Run steps individually for better CI visibility
-        bash scripts/validate.sh
+        echo "=== Importing schema.sql ==="
+        psql --set ON_ERROR_STOP=on --single-transaction \
+             -h localhost -p 5432 -U postgres \
+             -d personalbase_ci \
+             -f schema.sql
+        echo "=== Schema imported successfully ==="
+        
+        echo "=== Running smoke tests ==="
+        psql -h localhost -p 5432 -U postgres -d personalbase_ci \
+             -f scripts/schema_smoke_tests.sql
 
     - name: Run pgTAP unit tests
       env:
