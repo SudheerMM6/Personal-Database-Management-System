@@ -92,8 +92,10 @@ for ($i = 0; $i -lt $totalLines; $i++) {
     [void]$output.Add($line)
 }
 
-# Write output
-$output | Set-Content $OutputFile -Encoding UTF8
+# Write output (UTF-8 without BOM)
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$outputText = $output -join "`n"
+[System.IO.File]::WriteAllText((Resolve-Path $OutputFile).Path, $outputText, $utf8NoBom)
 
 $outputLines = $output.Count
 Write-Host ""

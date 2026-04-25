@@ -52,7 +52,20 @@ awk '
         print "INSERTS:" inserts > "/dev/stderr"
         print "SETVALS:" setvals > "/dev/stderr"
     }
-' "$INPUT_FILE" > "$OUTPUT_FILE" 2> /tmp/stats.txt
+' "$INPUT_FILE" 2> /tmp/stats.txt > "$OUTPUT_FILE.tmp"
+
+# Strip BOM from output if present (ensure clean UTF-8 without BOM)
+if command -v sed >/dev/null 2>&1; then
+    sed '1s/^\xEF\xBB\xBF//' "$OUTPUT_FILE.tmp" > "$OUTPUT_FILE"
+else
+    # Check if first 3 bytes are BOM
+    if head -c3 "$OUTPUT_FILE.tmp" | od -An -tx1 2>/dev/null | grep -q "ef bb bf"; then
+        tail -c +4 "$OUTPUT_FILE.tmp" > "$OUTPUT_FILE"
+    else
+        mv "$OUTPUT_FILE.tmp" "$OUTPUT_FILE"
+    fi
+fi
+rm -f "$OUTPUT_FILE.tmp"
 
 # Read stats from stderr
 data_sections=$(grep "^DATA_SECTIONS:" /tmp/stats.txt | cut -d: -f2 || echo "0")

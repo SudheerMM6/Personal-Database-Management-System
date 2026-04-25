@@ -75,11 +75,27 @@ try {
     
     $output | Set-Content $tempFile -Encoding UTF8
     
-    # Compare files
+    # Compare files (normalize BOM first)
     Write-Host "Comparing generated vs committed $ExpectedFile..." -ForegroundColor Gray
     
+    # Read files and strip BOM if present on first line
+    $generatedContent = Get-Content $tempFile -Raw
+    $committedContent = Get-Content $ExpectedFile -Raw
+    
+    # Remove UTF-8 BOM (EF BB BF) from start if present
+    if ($generatedContent -match "^\uFEFF") {
+        $generatedContent = $generatedContent.Substring(1)
+    }
+    if ($committedContent -match "^\uFEFF") {
+        $committedContent = $committedContent.Substring(1)
+    }
+    
+    # Split into lines for comparison
+    $generatedLines = $generatedContent -split "`r?`n"
+    $committedLines = $committedContent -split "`r?`n"
+    
     # Use diff if available, otherwise compare hashes
-    $diff = Compare-Object (Get-Content $tempFile) (Get-Content $ExpectedFile)
+    $diff = Compare-Object $generatedLines $committedLines
     
     if ($diff) {
         Write-Host ""

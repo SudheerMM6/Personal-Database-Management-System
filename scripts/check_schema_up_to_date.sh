@@ -53,10 +53,25 @@ awk '
     { print }
 ' "$SOURCE_FILE" > "$temp_file"
 
-echo -e "${GRAY}Comparing generated vs committed $EXPECTED_FILE...${NC}"
+echo -e "${GRAY}Normalizing and comparing...${NC}"
 
-# Compare files
-if diff -q "$temp_file" "$EXPECTED_FILE" > /dev/null 2>&1; then
+# Create normalized versions (strip UTF-8 BOM if present)
+normalized_temp="${temp_file}.norm"
+normalized_expected="${temp_file}.exp.norm"
+trap "rm -f $temp_file $normalized_temp $normalized_expected" EXIT
+
+# Strip BOM (EF BB BF at start) if present
+if command -v sed >/dev/null 2>&1; then
+    sed '1s/^\xEF\xBB\xBF//' "$temp_file" > "$normalized_temp"
+    sed '1s/^\xEF\xBB\xBF//' "$EXPECTED_FILE" > "$normalized_expected"
+else
+    # Fallback: use tail to skip first 3 bytes if file starts with BOM
+    head -c3 "$temp_file" | od -An -tx1 | grep -q "ef bb bf" && tail -c +4 "$temp_file" > "$normalized_temp" || cp "$temp_file" "$normalized_temp"
+    head -c3 "$EXPECTED_FILE" | od -An -tx1 | grep -q "ef bb bf" && tail -c +4 "$EXPECTED_FILE" > "$normalized_expected" || cp "$EXPECTED_FILE" "$normalized_expected"
+fi
+
+# Compare normalized files
+if diff -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
     echo ""
     echo -e "${GREEN}[CHECK PASSED] $EXPECTED_FILE is up to date${NC}"
     exit 0
@@ -65,7 +80,7 @@ else
     echo -e "${RED}[CHECK FAILED] $EXPECTED_FILE is out of date!${NC}"
     echo ""
     echo -e "${YELLOW}The following differences were found:${NC}"
-    diff "$temp_file" "$EXPECTED_FILE" | head -30
+    diff "$normalized_temp" "$normalized_expected" | head -30
     echo ""
     echo -e "${CYAN}To fix this, run:${NC}"
     echo "  bash scripts/generate_schema.sh"
