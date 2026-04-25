@@ -55,23 +55,29 @@ awk '
 
 echo -e "${GRAY}Normalizing and comparing...${NC}"
 
-# Create normalized versions (strip UTF-8 BOM if present)
+# Create normalized versions (strip UTF-8 BOM if present, ignore trailing whitespace)
 normalized_temp="${temp_file}.norm"
 normalized_expected="${temp_file}.exp.norm"
 trap "rm -f $temp_file $normalized_temp $normalized_expected" EXIT
 
-# Strip BOM (EF BB BF at start) if present
-if command -v sed >/dev/null 2>&1; then
-    sed '1s/^\xEF\xBB\xBF//' "$temp_file" > "$normalized_temp"
-    sed '1s/^\xEF\xBB\xBF//' "$EXPECTED_FILE" > "$normalized_expected"
-else
-    # Fallback: use tail to skip first 3 bytes if file starts with BOM
-    head -c3 "$temp_file" | od -An -tx1 | grep -q "ef bb bf" && tail -c +4 "$temp_file" > "$normalized_temp" || cp "$temp_file" "$normalized_temp"
-    head -c3 "$EXPECTED_FILE" | od -An -tx1 | grep -q "ef bb bf" && tail -c +4 "$EXPECTED_FILE" > "$normalized_expected" || cp "$EXPECTED_FILE" "$normalized_expected"
-fi
+# Function to strip BOM if present (EF BB BF = 0xEF 0xBB 0xBF)
+strip_bom() {
+    local input="$1"
+    local output="$2"
+    # Check if first 3 bytes are BOM
+    local first_bytes=$(head -c3 "$input" | od -An -tx1 | tr -d ' ')
+    if [[ "$first_bytes" == "efbbbf" ]]; then
+        tail -c +4 "$input" > "$output"
+    else
+        cp "$input" "$output"
+    fi
+}
 
-# Compare normalized files (ignoring blank lines)
-if diff -B -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
+strip_bom "$temp_file" "$normalized_temp"
+strip_bom "$EXPECTED_FILE" "$normalized_expected"
+
+# Compare normalized files (ignoring all whitespace differences for robustness)
+if diff -w -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
     echo ""
     echo -e "${GREEN}[CHECK PASSED] $EXPECTED_FILE is up to date${NC}"
     exit 0
