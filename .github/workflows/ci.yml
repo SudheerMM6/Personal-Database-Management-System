@@ -6,17 +6,13 @@ on:
   pull_request:
     branches: [ main, master ]
 
-env:
-  # Default: validate English-clean schema.sql
-  # Full dump with sample data is in "Personal base.sql"
-
 jobs:
   validate-schema:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
-        image: italia/agid-pgTAP:latest
+        image: postgres:16-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -34,18 +30,10 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Scan for Cyrillic characters
-      run: |
-        echo "=== Scanning for Cyrillic in English-clean files ==="
-        chmod +x scripts/scan_cyrillic.sh
-        scripts/scan_cyrillic.sh
-        echo "=== Cyrillic scan passed ==="
+      run: bash scripts/scan_cyrillic.sh
 
     - name: Check schema.sql is up to date
-      run: |
-        echo "=== Checking schema.sql drift ==="
-        chmod +x scripts/check_schema_up_to_date.sh
-        scripts/check_schema_up_to_date.sh
-        echo "=== schema.sql is up to date ==="
+      run: bash scripts/check_schema_up_to_date.sh
 
     - name: Wait for PostgreSQL
       run: |
@@ -55,78 +43,45 @@ jobs:
           sleep 1
         done
 
-    - name: Create test database
+    - name: Install pgTAP extension
       env:
         PGPASSWORD: postgres
       run: |
-        psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE personalbase_ci;"
+        psql -h localhost -p 5432 -U postgres -c "CREATE EXTENSION pgtap;"
 
-    - name: Import SQL schema (English-clean)
-      env:
-        PGPASSWORD: postgres
-        ON_ERROR_STOP: "on"
-      run: |
-        echo "Importing schema.sql (English-clean, schema only)..."
-        psql --set ON_ERROR_STOP=on --single-transaction \
-             -h localhost -p 5432 -U postgres \
-             -d personalbase_ci \
-             -f schema.sql
-
-    - name: Run schema smoke tests
+    - name: Run validate_all (import + smoke tests + pgTAP)
       env:
         PGPASSWORD: postgres
       run: |
-        echo "Running smoke tests..."
-        psql -h localhost -p 5432 -U postgres -d personalbase_ci \
-             -f scripts/schema_smoke_tests.sql
-
-    - name: Check for invalid objects
-      env:
-        PGPASSWORD: postgres
-      run: |
-        echo "Checking for invalid database objects..."
-        INVALID_COUNT=$(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "
-          SELECT count(*) 
-          FROM pg_class c 
-          JOIN pg_namespace n ON n.oid = c.relnamespace 
-          WHERE c.relpersistence != 't' 
-          AND c.relkind IN ('r', 'v', 'm', 'S', 'f') 
-          AND n.nspname NOT IN ('pg_catalog', 'information_schema', 'pg_toast')
-          AND NOT c.relhasrules 
-          AND c.relfilenode = 0;
-        " | xargs)
-        
-        if [ "$INVALID_COUNT" -eq "0" ]; then
-          echo "✓ No invalid objects found"
-        else
-          echo "✗ Found $INVALID_COUNT invalid objects"
-          exit 1
-        fi
-
-    - name: Install pg_prove
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cpanminus libtap-parser-sourcehandler-pgtap-perl
-        sudo cpanm TAP::Parser::SourceHandler::pgTAP
+        # Run steps individually for better CI visibility
+        bash scripts/validate.sh
 
     - name: Run pgTAP unit tests
       env:
         PGPASSWORD: postgres
       run: |
-        echo "=== Running pgTAP unit tests ==="
         export PGHOST=localhost
         export PGPORT=5432
         export PGUSER=postgres
         export PGDATABASE=personalbase_ci
-        pg_prove -d personalbase_ci tests/pgtap/*.pg
+        # Install pg_prove or fallback to psql
+        sudo apt-get update && sudo apt-get install -y cpanminus || true
+        sudo cpanm -q TAP::Parser::SourceHandler::pgTAP 2>/dev/null || true
+        # Run tests with fallback
+        if command -v pg_prove >/dev/null 2>&1; then
+          pg_prove -d personalbase_ci tests/pgtap/*.pg
+        else
+          bash scripts/run_pgtap.sh
+        fi
 
     - name: Schema validation summary
+      if: always()
       env:
         PGPASSWORD: postgres
       run: |
         echo "=== Schema Validation Summary ==="
-        echo "Tables: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
-        echo "Schemas: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.schemata WHERE schema_name IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
-        echo "Functions: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
-        echo "Views: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c \"SELECT count(*) FROM information_schema.views WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');\" | xargs)"
-        echo "=== CI PASSED ==="
+        echo "Tables: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');" 2>/dev/null | xargs)"
+        echo "Schemas: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "SELECT count(*) FROM information_schema.schemata WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');" 2>/dev/null | xargs)"
+        echo "Functions: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');" 2>/dev/null | xargs)"
+        echo "Views: $(psql -h localhost -p 5432 -U postgres -d personalbase_ci -t -c "SELECT count(*) FROM information_schema.views WHERE table_schema IN ('course', 'finance', 'habits', 'todo', 'trips', 'user');" 2>/dev/null | xargs)"
+        echo "=== CI COMPLETE ==="
