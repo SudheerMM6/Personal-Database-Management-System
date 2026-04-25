@@ -70,12 +70,12 @@ jobs:
       env:
         PGPASSWORD: postgres
       run: |
-        echo "=== Importing schema.sql ==="
+        echo "=== Importing full database dump ==="
         psql --set ON_ERROR_STOP=on --single-transaction \
              -h localhost -p 5432 -U postgres \
              -d personalbase_ci \
-             -f schema.sql
-        echo "=== Schema imported successfully ==="
+             -f "Personal base.sql"
+        echo "=== Database imported successfully ==="
         
         echo "=== Running smoke tests ==="
         psql -h localhost -p 5432 -U postgres -d personalbase_ci \
