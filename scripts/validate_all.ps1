@@ -172,11 +172,11 @@ catch {
     
     switch ($script:FailedStep) {
         "Cyrillic scan" { 
-            Write-Host "  powershell scripts/scan_cyrillic.ps1" -ForegroundColor White 
+            Write-Host '  powershell scripts/scan_cyrillic.ps1' -ForegroundColor White 
         }
         "Schema drift check" { 
-            Write-Host "  powershell scripts/generate_schema.ps1" -ForegroundColor White 
-            Write-Host "  git add schema.sql && git commit -m 'Update schema'" -ForegroundColor White 
+            Write-Host '  powershell scripts/generate_schema.ps1' -ForegroundColor White 
+            Write-Host '  git add schema.sql && git commit -m "Update schema"' -ForegroundColor White 
         }
         "Schema import validation" { 
             $cmd = "powershell scripts/validate.ps1"
@@ -184,10 +184,10 @@ catch {
             Write-Host "  $cmd" -ForegroundColor White 
         }
         "pgTAP unit tests" { 
-            Write-Host "  powershell scripts/run_pgtap.ps1" -ForegroundColor White 
+            Write-Host '  powershell scripts/run_pgtap.ps1' -ForegroundColor White 
         }
         default { 
-            Write-Host "  powershell scripts/validate_all.ps1" -ForegroundColor White 
+            Write-Host '  powershell scripts/validate_all.ps1' -ForegroundColor White 
         }
     }
     
