@@ -554,6 +554,21 @@ ALTER SEQUENCE course.courses_course_id_seq OWNED BY course.courses.course_id;
 
 COMMENT ON SEQUENCE course.courses_course_id_seq IS 'Sequence for generating unique identifiers (course_id) in the courses table, storing user courses.';
 
+--
+-- TOC entry 224 (class 1259 OID 26513)
+-- Name: finance_categories; Type: TABLE; Schema: finance; Owner: postgres
+--
+
+CREATE TABLE finance.finance_categories (
+    category_id integer NOT NULL,
+    user_id integer NOT NULL,
+    name character varying(100) NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    type_id integer NOT NULL
+);
+
+
 ALTER TABLE finance.finance_categories OWNER TO postgres;
 
 --
@@ -2506,3 +2521,44 @@ ALTER TABLE ONLY "user".users ALTER COLUMN user_id SET DEFAULT nextval('"user".u
 --
 -- TOC entry 5159 (class 0 OID 27694)
 -- Dependencies: 252
+
+
+--
+-- TOC entry 4874 (class 2606 OID 26518)
+-- Name: finance_categories finance_categories_pkey; Type: CONSTRAINT; Schema: finance; Owner: postgres
+--
+
+ALTER TABLE ONLY finance.finance_categories
+    ADD CONSTRAINT finance_categories_pkey PRIMARY KEY (category_id);
+
+
+--
+-- TOC entry 4875 (class 2606 OID 26520)
+-- Name: finance_categories finance_categories_user_id_fkey; Type: FK CONSTRAINT; Schema: finance; Owner: postgres
+--
+
+ALTER TABLE ONLY finance.finance_categories
+    ADD CONSTRAINT finance_categories_user_id_fkey FOREIGN KEY (user_id) REFERENCES "user".users(user_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4876 (class 2606 OID 26521)
+-- Name: finance_categories fk_finance_categories_type; Type: FK CONSTRAINT; Schema: finance; Owner: postgres
+--
+
+ALTER TABLE ONLY finance.finance_categories
+    ADD CONSTRAINT fk_finance_categories_type FOREIGN KEY (type_id) REFERENCES finance.finance_types(type_id);
+
+
+--
+-- TOC entry 4936 (class 2606 OID 26528)
+-- Name: finances finances_category_id_fkey; Type: FK CONSTRAINT; Schema: finance; Owner: postgres
+--
+
+ALTER TABLE ONLY finance.finances
+    ADD CONSTRAINT finances_category_id_fkey FOREIGN KEY (category_id) REFERENCES finance.finance_categories(category_id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
