@@ -40,11 +40,24 @@ jobs:
           sleep 1
         done
 
-    - name: Install pgTAP extension
+    - name: Install pgTAP in container
       env:
         PGPASSWORD: postgres
       run: |
-        psql -h localhost -p 5432 -U postgres -c "CREATE EXTENSION pgtap;"
+        # Install pgTAP extension files in the running container
+        docker exec $(docker ps -q --filter "ancestor=postgres:16-alpine") sh -c "
+          apk add --no-cache git build-base postgresql16-dev perl-dev perl-app-cpanminus && \
+          cd /tmp && \
+          git clone https://github.com/theory/pgtap.git && \
+          cd pgtap && \
+          make && make install
+        " || echo "pgTAP install may have failed, will try anyway"
+
+    - name: Create pgTAP extension
+      env:
+        PGPASSWORD: postgres
+      run: |
+        psql -h localhost -p 5432 -U postgres -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 
     - name: Run validate_all (import + smoke tests + pgTAP)
       env:
