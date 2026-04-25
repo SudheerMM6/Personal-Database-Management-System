@@ -20,7 +20,7 @@ param(
     [string]$SqlFile = "schema.sql",
     [string]$DbName = "personalbase_ci",
     [string]$DbUser = "postgres",
-    [string]$DbPassword = "postgres",
+    [SecureString]$DbPassword = (ConvertTo-SecureString "postgres" -AsPlainText -Force),
     [string]$DbHost = "localhost",
     [int]$DbPort = 5432,
     [switch]$SkipDocker,
@@ -56,8 +56,12 @@ function Test-Command($cmd) {
     $null -ne (Get-Command $cmd -ErrorAction SilentlyContinue)
 }
 
+function Get-PlainPassword {
+    return [System.Runtime.InteropServices.Marshal]::PtrToStringAuto([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($DbPassword))
+}
+
 function Invoke-Psql($query, $database = $DbName) {
-    $env:PGPASSWORD = $DbPassword
+    $env:PGPASSWORD = Get-PlainPassword
     $result = psql -h $DbHost -p $DbPort -U $DbUser -d $database -t -c $query 2>&1
     $env:PGPASSWORD = $null
     return $result
@@ -82,8 +86,8 @@ function Start-DockerPostgres {
         $maxAttempts = 30
         $attempt = 0
         while ($attempt -lt $maxAttempts) {
-            $env:PGPASSWORD = $DbPassword
-            $result = psql -h $DbHost -p $DbPort -U $DbUser -d postgres -c "SELECT 1" 2>&1
+            $env:PGPASSWORD = Get-PlainPassword
+            $null = psql -h $DbHost -p $DbPort -U $DbUser -d postgres -c "SELECT 1" 2>&1
             $env:PGPASSWORD = $null
             if ($LASTEXITCODE -eq 0) {
                 Write-Pass "PostgreSQL is ready"
@@ -145,7 +149,7 @@ function Import-SqlDump {
         exit 1
     }
     
-    $env:PGPASSWORD = $DbPassword
+    $env:PGPASSWORD = Get-PlainPassword
     $env:ON_ERROR_STOP = "on"
     
     # Import with strict error handling
@@ -174,7 +178,7 @@ function Invoke-SmokeTests {
         return
     }
     
-    $env:PGPASSWORD = $DbPassword
+    $env:PGPASSWORD = Get-PlainPassword
     $output = psql -h $DbHost -p $DbPort -U $DbUser -d $DbName -f "$testFile" 2>&1
     $env:PGPASSWORD = $null
     
@@ -218,7 +222,7 @@ try {
     Write-Host "=== PersonalBase SQL Validation ===" -ForegroundColor White
     Write-Host "Source: $sourceType"
     Write-Host "SQL File: $SqlFile"
-    Write-Host "Database: $DbName on $DbHost:$DbPort"
+    Write-Host "Database: $DbName on ${DbHost}:${DbPort}"
     
     Start-DockerPostgres
     Test-DatabaseConnection
