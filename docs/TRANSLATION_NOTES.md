@@ -37,5 +37,3 @@ psql -U your_user -d your_db -f "Personal base.sql"
 All validation scripts and CI use `schema.sql` by default:
 - `scripts/validate.sh` / `scripts/validate.ps1`
 - GitHub Actions CI
-
-The Cyrillic guard script (`scripts/scan_cyrillic.*`) ensures no Cyrillic text enters the default English-clean files.

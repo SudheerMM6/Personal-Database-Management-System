@@ -26,7 +26,6 @@ bash scripts/validate_all.sh
 - Functions, views, triggers present
 
 ### Static Checks
-- No Cyrillic in English-clean files
 - `schema.sql` up to date with generator
 
 ## ER Diagram
@@ -40,10 +39,9 @@ bash scripts/validate_all.sh
 ## CI Pipeline
 
 GitHub Actions runs the same validation as `validate_all` on every PR:
-1. Cyrillic scan
-2. Schema drift check
-3. PostgreSQL import
-4. Smoke tests
-5. pgTAP tests
+1. Schema drift check
+2. PostgreSQL import
+3. Smoke tests
+4. pgTAP tests
 
 All must pass before merge.

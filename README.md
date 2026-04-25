@@ -17,10 +17,9 @@ bash scripts/validate_all.sh
 ```
 
 **What it checks:**
-1. ✅ No Cyrillic in English-clean files
-2. ✅ `schema.sql` matches source dump
-3. ✅ Schema imports cleanly into PostgreSQL
-4. ✅ 68 pgTAP unit tests pass
+1. ✅ `schema.sql` matches source dump
+2. ✅ Schema imports cleanly into PostgreSQL
+3. ✅ 68 pgTAP unit tests pass
 
 ![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
 

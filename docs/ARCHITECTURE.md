@@ -34,12 +34,11 @@ A PostgreSQL 16+ database schema for managing personal life data: courses, finan
 bash scripts/validate_all.sh
 ```
 
-Runs 5 steps:
-1. Cyrillic scan (English-clean files only)
-2. Schema drift check (schema.sql matches generator)
-3. PostgreSQL import test
-4. Smoke tests
-5. pgTAP unit tests (68 assertions)
+Runs 4 steps:
+1. Schema drift check (schema.sql matches generator)
+2. PostgreSQL import test
+3. Smoke tests
+4. pgTAP unit tests (68 assertions)
 
 ## Extending Safely
 

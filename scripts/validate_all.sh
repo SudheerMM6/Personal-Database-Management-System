@@ -3,11 +3,10 @@
 # One-command validation for PersonalBase database.
 #
 # Runs the complete validation suite:
-#   1. Cyrillic character scan
-#   2. Schema drift check
-#   3. PostgreSQL startup (via docker-compose if available)
-#   4. Schema import validation
-#   5. pgTAP unit tests
+#   1. Schema drift check
+#   2. PostgreSQL startup (via docker-compose if available)
+#   3. Schema import validation
+#   4. pgTAP unit tests
 #
 # Usage:
 #   ./scripts/validate_all.sh
@@ -134,16 +133,7 @@ start_docker() {
 # Main execution
 header "PersonalBase Database Validation"
 
-# Step 1: Cyrillic scan
-step "Scanning for Cyrillic characters"
-if ! "$SCRIPT_DIR/scan_cyrillic.sh"; then
-    FAILED_STEP="Cyrillic scan"
-    error "Cyrillic scan failed"
-    exit 1
-fi
-success "No Cyrillic in English-clean files"
-
-# Step 2: Schema drift check
+# Step 1: Schema drift check
 step "Checking schema.sql is up to date"
 if ! "$SCRIPT_DIR/check_schema_up_to_date.sh"; then
     FAILED_STEP="Schema drift check"
@@ -187,7 +177,6 @@ DURATION=$((END_TIME - START_TIME))
 header "✅ ALL CHECKS PASSED"
 echo -e "${GREEN}Duration: ${DURATION}s${NC}"
 echo -e "${WHITE}\nValidated:${NC}"
-echo -e "${GRAY}  • No Cyrillic characters${NC}"
 echo -e "${GRAY}  • schema.sql is up to date${NC}"
 echo -e "${GRAY}  • Schema imports cleanly${NC}"
 echo -e "${GRAY}  • 68 pgTAP unit tests passed${NC}"

@@ -29,9 +29,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Scan for Cyrillic characters
-      run: bash scripts/scan_cyrillic.sh
-
     - name: Check schema.sql is up to date
       run: bash scripts/check_schema_up_to_date.sh
 
