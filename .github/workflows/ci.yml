@@ -40,6 +40,13 @@ jobs:
         scripts/scan_cyrillic.sh
         echo "=== Cyrillic scan passed ==="
 
+    - name: Check schema.sql is up to date
+      run: |
+        echo "=== Checking schema.sql drift ==="
+        chmod +x scripts/check_schema_up_to_date.sh
+        scripts/check_schema_up_to_date.sh
+        echo "=== schema.sql is up to date ==="
+
     - name: Wait for PostgreSQL
       run: |
         for i in {1..30}; do

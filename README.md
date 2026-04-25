@@ -45,6 +45,31 @@ psql -U your_user -d your_db -f "Personal base.sql"
 
 See `docs/TRANSLATION_NOTES.md` for details on the English-clean default.
 
+### Regenerating schema.sql
+
+`schema.sql` is generated deterministically from `Personal base.sql` by stripping data sections:
+
+**Windows:**
+```powershell
+powershell scripts/generate_schema.ps1
+```
+
+**macOS/Linux:**
+```bash
+bash scripts/generate_schema.sh
+```
+
+The generator:
+- Removes `INSERT INTO` data statements
+- Removes `SELECT pg_catalog.setval()` sequence resets
+- Keeps all DDL (CREATE, ALTER, COMMENT ON, indexes, constraints, functions, views)
+- Verifies output contains no Cyrillic
+
+CI will fail if `schema.sql` is out of sync with the source dump:
+```bash
+bash scripts/check_schema_up_to_date.sh
+```
+
 ## Requirements
 
 - PostgreSQL 16 or higher
