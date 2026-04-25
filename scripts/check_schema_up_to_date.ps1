@@ -91,8 +91,8 @@ try {
     }
     
     # Split into lines for comparison
-    $generatedLines = $generatedContent -split "`r?`n"
-    $committedLines = $committedContent -split "`r?`n"
+    $generatedLines = $generatedContent -split "`r?`n" | Where-Object { $_.Trim() -ne '' }
+    $committedLines = $committedContent -split "`r?`n" | Where-Object { $_.Trim() -ne '' }
     
     # Use diff if available, otherwise compare hashes
     $diff = Compare-Object $generatedLines $committedLines

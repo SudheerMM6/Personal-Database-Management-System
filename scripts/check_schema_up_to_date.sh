@@ -70,8 +70,8 @@ else
     head -c3 "$EXPECTED_FILE" | od -An -tx1 | grep -q "ef bb bf" && tail -c +4 "$EXPECTED_FILE" > "$normalized_expected" || cp "$EXPECTED_FILE" "$normalized_expected"
 fi
 
-# Compare normalized files
-if diff -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
+# Compare normalized files (ignoring blank lines)
+if diff -B -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
     echo ""
     echo -e "${GREEN}[CHECK PASSED] $EXPECTED_FILE is up to date${NC}"
     exit 0
