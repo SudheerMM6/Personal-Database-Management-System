@@ -88,12 +88,14 @@ try {
         Write-Host "The following differences were found:" -ForegroundColor Yellow
         $diff | Select-Object -First 10 | ForEach-Object {
             $indicator = if ($_.SideIndicator -eq "<=") { "(generated)" } else { "(committed)" }
-            Write-Host "  $indicator: $($_.InputObject)" -ForegroundColor $(if ($_.SideIndicator -eq "<=") { "Green" } else { "Red" })
+            $color = if ($_.SideIndicator -eq "<=") { "Green" } else { "Red" }
+            $line = $_.InputObject
+            Write-Host "  $indicator`: $line" -ForegroundColor $color
         }
         Write-Host ""
         Write-Host "To fix this, run:" -ForegroundColor Cyan
-        Write-Host "  powershell scripts/generate_schema.ps1" -ForegroundColor White
-        Write-Host "Then commit the updated $ExpectedFile" -ForegroundColor White
+        Write-Host '  powershell scripts/generate_schema.ps1' -ForegroundColor White
+        Write-Host "Then commit the updated `$ExpectedFile" -ForegroundColor White
         exit 1
     } else {
         Write-Host ""
