@@ -1,0 +1,29 @@
+# Cross-platform line ending normalization
+
+# Shell scripts must use LF (for bash on Windows/WSL/Docker)
+scripts/*.sh text eol=lf
+
+# Documentation uses LF
+*.md text eol=lf
+*.txt text eol=lf
+*.sql text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# SQL files (both dumps)
+*.sql text eol=lf
+"Personal base.sql" text eol=lf
+
+# PowerShell scripts
+*.ps1 text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary

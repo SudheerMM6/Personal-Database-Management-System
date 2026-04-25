@@ -1,0 +1,18 @@
+-- Test: Views exist
+-- Verify analytics views are present
+
+BEGIN;
+SELECT plan(6);
+
+-- Analytics views should exist
+SELECT has_view('course', 'course_progress', 'course.course_progress view should exist');
+SELECT has_view('course', 'course_grades', 'course.course_grades view should exist');
+SELECT has_view('finance', 'financial_summary', 'finance.financial_summary view should exist');
+SELECT has_view('trips', 'trip_costs', 'trips.trip_costs view should exist');
+
+-- Verify views are queryable (have columns)
+SELECT has_column('course', 'course_progress', 'course_id', 'course_progress view should expose course_id');
+SELECT has_column('finance', 'financial_summary', 'total_income', 'financial_summary view should expose total_income');
+
+SELECT * FROM finish();
+ROLLBACK;
