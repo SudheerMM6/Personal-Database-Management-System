@@ -163,10 +163,31 @@ CI automatically runs the same validation as `validate_all` on every push and PR
 4. Invalid object check
 5. pgTAP unit tests (68 assertions)
 
+## 📦 What's Included
+
+| File/Folder | Purpose |
+|-------------|---------|
+| `schema.sql` | **Default schema** (English-clean, no data) |
+| `"Personal base.sql"` | Full dump with sample data (optional) |
+| `scripts/validate_all.*` | One-command validation |
+| `tests/pgtap/` | 68 pgTAP unit tests |
+| `.github/workflows/ci.yml` | GitHub Actions CI |
+| `ER.png` | Visual ER diagram (may drift) |
+
+## 📊 ER Diagram
+
+`ER.png` is a visual aid for understanding table relationships:
+
+![ER Diagram](ER.png)
+
+**Note:** ER.png may drift from the actual schema. The authoritative sources are:
+- `schema.sql` - DDL source of truth
+- `tests/pgtap/*.pg` - 68 structure assertions
+
 ## Documentation
 
-- See `ER.png` for the Entity Relationship Diagram
-- Schema documentation is embedded in the SQL files as comments
-- See `docs/TRANSLATION_NOTES.md` for translation notes and SQL file differences
-- See `scripts/schema_smoke_tests.sql` for automated validation queries
-- See `scripts/scan_cyrillic.sh` for the Cyrillic guard script
+- `docs/ARCHITECTURE.md` - Schema design & validation overview
+- `docs/REVIEWER_NOTES.md` - Quickstart for reviewers
+- `docs/TRANSLATION_NOTES.md` - schema.sql vs full dump explanation
+- `CONTRIBUTING.md` - PR requirements
+- `scripts/schema_smoke_tests.sql` - Additional validation queries
