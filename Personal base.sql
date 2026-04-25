@@ -2923,7 +2923,7 @@ INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, upd
 INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, updated_at) VALUES (8, 8, 'Walks', '2025-05-13 12:24:28.911238', '2025-05-13 12:24:28.911238');
 INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, updated_at) VALUES (9, 9, 'Language learning', '2025-05-13 12:24:28.911238', '2025-05-13 12:24:28.911238');
 INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, updated_at) VALUES (10, 10, 'Planning', '2025-05-13 12:24:28.911238', '2025-05-13 12:24:28.911238');
-INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, updated_at) VALUES (11, 11, 'Фитнес', '2025-05-13 12:24:28.911238', '2025-05-13 12:24:28.911238');
+INSERT INTO habits.habit_categories (category_id, user_id, name, created_at, updated_at) VALUES (11, 11, 'Fitness', '2025-05-13 12:24:28.911238', '2025-05-13 12:24:28.911238');
 
 
 

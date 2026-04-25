@@ -3,11 +3,12 @@
 .SYNOPSIS
     Generates schema.sql from "Personal base.sql" by stripping data sections.
 .DESCRIPTION
-    Removes all data sections while preserving all DDL:
-    - Skips sections marked with "Type: TABLE DATA"
-    - Skips sections marked with "Type: SEQUENCE SET"
+    Uses proper section-based parsing to preserve DDL order:
+    - Parses pg_dump sections using header pattern: -- Name: X; Type: Y; Schema: Z; Owner: W
+    - Skips only TABLE DATA and SEQUENCE SET sections
     - Skips INSERT INTO statements
     - Skips SELECT pg_catalog.setval(...) lines
+    - Skips COPY data blocks
     - Keeps all CREATE, ALTER, COMMENT ON, and other DDL
     
     Input: "Personal base.sql"
@@ -38,41 +39,56 @@ $totalLines = $lines.Count
 Write-Host "Processing $totalLines lines..." -ForegroundColor Gray
 
 $output = New-Object System.Collections.ArrayList
-$inDataSection = $false
+$inSection = $false
+$skipSection = $false
+$inCopyBlock = $false
 $dataSectionsRemoved = 0
 $insertsRemoved = 0
 $setvalsRemoved = 0
+$copyBlocksRemoved = 0
 
 for ($i = 0; $i -lt $totalLines; $i++) {
     $line = $lines[$i]
     
-    # Check for data section headers (comment lines indicating data)
-    if ($line -match "^--.*Type: TABLE DATA") {
-        $inDataSection = $true
-        $dataSectionsRemoved++
+    # Detect section headers: -- Name: X; Type: Y; Schema: Z; Owner: W
+    if ($line -match "^-- Name:.*Type:.*Schema:.*Owner:") {
+        $inSection = $true
+        $skipSection = $false
+        
+        # Extract Type from header
+        if ($line -match "Type:\s*([^;]+)") {
+            $sectionType = $matches[1].Trim()
+            # Skip only TABLE DATA and SEQUENCE SET sections
+            if ($sectionType -eq "TABLE DATA" -or $sectionType -eq "SEQUENCE SET") {
+                $skipSection = $true
+                $dataSectionsRemoved++
+            }
+        }
         continue
     }
     
-    if ($line -match "^--.*Type: SEQUENCE SET") {
-        $inDataSection = $true
-        $dataSectionsRemoved++
+    # Track COPY blocks (data loading)
+    if ($line -match "^COPY ") {
+        $inCopyBlock = $true
+        $copyBlocksRemoved++
         continue
     }
+    if ($inCopyBlock -and $line -match "^\\\.$") {
+        $inCopyBlock = $false
+        continue
+    }
+    if ($inCopyBlock) { continue }
     
-    # Check for end of data section (blank line followed by comment or new section)
-    if ($inDataSection -and $line -match "^---") {
-        $inDataSection = $false
+    # End of section marker
+    if ($inSection -and $line -match "^---$") {
+        $inSection = $false
+        $skipSection = $false
     }
     
-    # Skip all lines while in data section
-    if ($inDataSection) {
-        # Also track what we're skipping for reporting
-        if ($line -match "^INSERT INTO") {
-            $insertsRemoved++
-        }
-        if ($line -match "^SELECT pg_catalog\.setval") {
-            $setvalsRemoved++
-        }
+    # Skip lines in data sections
+    if ($skipSection) {
+        if ($line -match "^INSERT INTO") { $insertsRemoved++ }
+        if ($line -match "^SELECT pg_catalog\.setval") { $setvalsRemoved++ }
         continue
     }
     
@@ -105,6 +121,7 @@ Write-Host "Lines: $totalLines → $outputLines" -ForegroundColor White
 Write-Host "Data sections removed: $dataSectionsRemoved" -ForegroundColor Yellow
 Write-Host "INSERT statements removed: $insertsRemoved" -ForegroundColor Yellow
 Write-Host "setval statements removed: $setvalsRemoved" -ForegroundColor Yellow
+Write-Host "COPY blocks removed: $copyBlocksRemoved" -ForegroundColor Yellow
 
 # Verify no Cyrillic in output
 $cyrillic = Select-String -Path $OutputFile -Pattern '[\u0400-\u04FF]'

@@ -65,8 +65,6 @@ For the complete dump including sample data:
 psql -U your_user -d your_db -f "Personal base.sql"
 ```
 
-See `docs/TRANSLATION_NOTES.md` for details on the English-clean default.
-
 ### Regenerating schema.sql
 
 `schema.sql` is generated deterministically from `Personal base.sql` by stripping data sections:
@@ -85,8 +83,6 @@ The generator:
 - Removes `INSERT INTO` data statements
 - Removes `SELECT pg_catalog.setval()` sequence resets
 - Keeps all DDL (CREATE, ALTER, COMMENT ON, indexes, constraints, functions, views)
-- Verifies output contains no Cyrillic
-
 CI will fail if `schema.sql` is out of sync with the source dump:
 ```bash
 bash scripts/check_schema_up_to_date.sh
@@ -149,19 +145,17 @@ bash scripts/run_pgtap.sh
 ```
 
 **CI Pipeline includes:**
-1. Cyrillic character scan
-2. Schema import validation (smoke tests)
-3. Invalid object check
-4. **pgTAP unit tests**
+1. Schema import validation (smoke tests)
+2. Invalid object check
+3. **pgTAP unit tests**
 
 ## 🔒 CI Pipeline
 
 CI automatically runs the same validation as `validate_all` on every push and PR:
-1. Cyrillic character scan
-2. Schema drift check
-3. Schema import validation
-4. Invalid object check
-5. pgTAP unit tests (68 assertions)
+1. Schema drift check
+2. Schema import validation
+3. Invalid object check
+4. pgTAP unit tests (68 assertions)
 
 ## 📦 What's Included
 
@@ -188,6 +182,5 @@ CI automatically runs the same validation as `validate_all` on every push and PR
 
 - `docs/ARCHITECTURE.md` - Schema design & validation overview
 - `docs/REVIEWER_NOTES.md` - Quickstart for reviewers
-- `docs/TRANSLATION_NOTES.md` - schema.sql vs full dump explanation
 - `CONTRIBUTING.md` - PR requirements
 - `scripts/schema_smoke_tests.sql` - Additional validation queries

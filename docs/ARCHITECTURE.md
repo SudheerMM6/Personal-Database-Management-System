@@ -25,7 +25,7 @@ A PostgreSQL 16+ database schema for managing personal life data: courses, finan
 - `scripts/schema_smoke_tests.sql` - Additional validation
 
 **Reference only:**
-- `"Personal base.sql"` - Full dump with sample data (may contain Cyrillic)
+- `"Personal base.sql"` - Full dump with sample data
 - `ER.png` - Visual diagram (may drift; use pgTAP tests to verify structure)
 
 ## How Validation Works

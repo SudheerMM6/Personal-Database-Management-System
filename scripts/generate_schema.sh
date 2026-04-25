@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Generates schema.sql from "Personal base.sql" by stripping data sections.
-# Removes all data sections while preserving all DDL.
+# Uses proper section-based parsing to preserve DDL order.
 #
 # Usage:
 #   ./scripts/generate_schema.sh
@@ -33,25 +33,68 @@ fi
 total_lines=$(wc -l < "$INPUT_FILE")
 echo -e "${GRAY}Processing $total_lines lines...${NC}"
 
-# Process file using awk to handle multi-line logic
+# Process file using awk with proper section parsing
+# Section header pattern: ^-- Name: ...; Type: ...; Schema: ...; Owner: ...
 awk '
-    /^--.*Type: TABLE DATA/ { skip_section=1; data_sections++; next }
-    /^--.*Type: SEQUENCE SET/ { skip_section=1; data_sections++; next }
-    /^---/ && skip_section { skip_section=0; }
-    skip_section {
-        if (/^INSERT INTO/) inserts++
-        if (/^SELECT pg_catalog\.setval/) setvals++
-        next
-    }
-    /^INSERT INTO/ { inserts++; next }
-    /^SELECT pg_catalog\.setval/ { setvals++; next }
-    { print }
+BEGIN {
+    in_section = 0
+    skip_section = 0
+    data_sections = 0
+    inserts = 0
+    setvals = 0
+    copy_blocks = 0
+    in_copy = 0
+}
+
+# Detect section headers: -- Name: X; Type: Y; Schema: Z; Owner: W
+/^-- Name:.*Type:.*Schema:.*Owner:/ {
+    in_section = 1
+    skip_section = 0
     
-    END {
-        print "DATA_SECTIONS:" data_sections > "/dev/stderr"
-        print "INSERTS:" inserts > "/dev/stderr"
-        print "SETVALS:" setvals > "/dev/stderr"
+    # Extract Type from header
+    if (match($0, /Type: ([^;]+)/, arr)) {
+        section_type = arr[1]
+        # Skip only TABLE DATA and SEQUENCE SET sections
+        if (section_type == "TABLE DATA" || section_type == "SEQUENCE SET") {
+            skip_section = 1
+            data_sections++
+        }
     }
+}
+
+# Track COPY blocks (data loading)
+/^COPY / {
+    in_copy = 1
+    copy_blocks++
+    next
+}
+/^\\\.$/ && in_copy {
+    in_copy = 0
+    next
+}
+in_copy { next }
+
+# Skip standalone INSERT and setval (outside sections)
+/^INSERT INTO/ { inserts++; next }
+/^SELECT pg_catalog\.setval/ { setvals++; next }
+
+# End of section marker
+/^---$/ {
+    if (in_section) {
+        in_section = 0
+        skip_section = 0
+    }
+}
+
+# Print line if not skipping
+!skip_section { print }
+
+END {
+    print "DATA_SECTIONS:" data_sections > "/dev/stderr"
+    print "INSERTS:" inserts > "/dev/stderr"
+    print "SETVALS:" setvals > "/dev/stderr"
+    print "COPY_BLOCKS:" copy_blocks > "/dev/stderr"
+}
 ' "$INPUT_FILE" 2> /tmp/stats.txt > "$OUTPUT_FILE.tmp"
 
 # Strip BOM from output if present (ensure clean UTF-8 without BOM)
@@ -71,6 +114,7 @@ rm -f "$OUTPUT_FILE.tmp"
 data_sections=$(grep "^DATA_SECTIONS:" /tmp/stats.txt | cut -d: -f2 || echo "0")
 inserts=$(grep "^INSERTS:" /tmp/stats.txt | cut -d: -f2 || echo "0")
 setvals=$(grep "^SETVALS:" /tmp/stats.txt | cut -d: -f2 || echo "0")
+copy_blocks=$(grep "^COPY_BLOCKS:" /tmp/stats.txt | cut -d: -f2 || echo "0")
 rm -f /tmp/stats.txt
 
 output_lines=$(wc -l < "$OUTPUT_FILE")
@@ -82,6 +126,7 @@ echo "Lines: $total_lines → $output_lines"
 echo -e "${YELLOW}Data sections removed: ${data_sections:-0}${NC}"
 echo -e "${YELLOW}INSERT statements removed: ${inserts:-0}${NC}"
 echo -e "${YELLOW}setval statements removed: ${setvals:-0}${NC}"
+echo -e "${YELLOW}COPY blocks removed: ${copy_blocks:-0}${NC}"
 
 # Verify no Cyrillic in output
 if grep -qP '[\x{0400}-\x{04FF}]' "$OUTPUT_FILE" 2>/dev/null; then
