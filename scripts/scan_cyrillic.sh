@@ -49,8 +49,8 @@ check_file() {
     
     ((SCANNED_COUNT++))
     
-    # Check for Cyrillic characters
-    if grep -qP '[\x{0400}-\x{04FF}]' "$file" 2>/dev/null; then
+    # Check for Cyrillic characters (|| true prevents set -e from exiting when no matches)
+    if grep -qP '[\x{0400}-\x{04FF}]' "$file" 2>/dev/null || false; then
         FOUND_CYRILLIC=true
         CYRILLIC_FILES+=("$relative_path")
         
@@ -60,7 +60,7 @@ check_file() {
         local line_num=0
         while IFS= read -r line; do
             ((line_num++))
-            if echo "$line" | grep -qP '[\x{0400}-\x{04FF}]' 2>/dev/null; then
+            if echo "$line" | grep -qP '[\x{0400}-\x{04FF}]' 2>/dev/null || false; then
                 local found_text
                 found_text=$(echo "$line" | grep -oP '[\x{0400}-\x{04FF}]+' | tr '\n' ' ')
                 echo -e "${RED}  Line ${line_num}: ${found_text}${NC}"
