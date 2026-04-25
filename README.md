@@ -2,6 +2,28 @@
 
 A fully‑structured PostgreSQL 16+ database designed to manage and analyze multiple aspects of personal life — from education and finances to habits, tasks, and travel — with automation, data integrity checks, and analytics views.
 
+## ⚡ Quickstart for Reviewers (20 seconds)
+
+One command validates everything:
+
+**Windows:**
+```powershell
+powershell scripts/validate_all.ps1
+```
+
+**macOS/Linux:**
+```bash
+bash scripts/validate_all.sh
+```
+
+**What it checks:**
+1. ✅ No Cyrillic in English-clean files
+2. ✅ `schema.sql` matches source dump
+3. ✅ Schema imports cleanly into PostgreSQL
+4. ✅ 68 pgTAP unit tests pass
+
+![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
+
 ## 🗂️  Modular Schema Design
 
 Organized into dedicated schemas for scalability and clarity:
@@ -132,11 +154,14 @@ bash scripts/run_pgtap.sh
 3. Invalid object check
 4. **pgTAP unit tests**
 
-## 🔒 CI Status
+## 🔒 CI Pipeline
 
-![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
-
-CI runs full validation: cyrillic scan → import → smoke tests → invalid objects → pgTAP tests on every push and PR.
+CI automatically runs the same validation as `validate_all` on every push and PR:
+1. Cyrillic character scan
+2. Schema drift check
+3. Schema import validation
+4. Invalid object check
+5. pgTAP unit tests (68 assertions)
 
 ## Documentation
 
