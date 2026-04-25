@@ -59,7 +59,13 @@ jobs:
       run: |
         psql -h localhost -p 5432 -U postgres -c "CREATE EXTENSION IF NOT EXISTS pgtap;"
 
-    - name: Run validate_all (import + smoke tests + pgTAP)
+    - name: Create test database
+      env:
+        PGPASSWORD: postgres
+      run: |
+        psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE personalbase_ci;"
+
+    - name: Run validate (import + smoke tests)
       env:
         PGPASSWORD: postgres
       run: |
