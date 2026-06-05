@@ -162,7 +162,7 @@ function Import-SqlDump {
     $env:ON_ERROR_STOP = $null
     
     if ($exitCode -eq 0) {
-        Write-Pass "SQL dump imported successfully"
+        Write-Pass "SQL dump imported"
     } else {
         Write-Fail "SQL import failed with exit code $exitCode"
         exit 1

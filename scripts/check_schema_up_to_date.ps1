@@ -40,40 +40,57 @@ try {
     # Read and process
     $lines = Get-Content $SourceFile
     $output = New-Object System.Collections.ArrayList
-    $inDataSection = $false
-    
+    $inSection = $false
+    $skipSection = $false
+    $inCopyBlock = $false
+
     foreach ($line in $lines) {
-        # Check for data section headers
-        if ($line -match "^--.*Type: TABLE DATA") {
-            $inDataSection = $true
+        if ($line -match "^-- Name:.*Type:.*Schema:.*Owner:") {
+            $inSection = $true
+            $skipSection = $false
+
+            if ($line -match "Type:\s*([^;]+)") {
+                $sectionType = $matches[1].Trim()
+                if ($sectionType -eq "TABLE DATA" -or $sectionType -eq "SEQUENCE SET") {
+                    $skipSection = $true
+                }
+            }
             continue
         }
-        
-        if ($line -match "^--.*Type: SEQUENCE SET") {
-            $inDataSection = $true
+
+        if ($line -match "^COPY ") {
+            $inCopyBlock = $true
             continue
         }
-        
-        # Check for end of data section
-        if ($inDataSection -and $line -match "^---") {
-            $inDataSection = $false
-        }
-        
-        # Skip lines in data section
-        if ($inDataSection) {
+
+        if ($inCopyBlock -and $line -match "^\\\.$") {
+            $inCopyBlock = $false
             continue
         }
-        
-        # Skip standalone INSERT and setval
+
+        if ($inCopyBlock) {
+            continue
+        }
+
+        if ($inSection -and $line -match "^---$") {
+            $inSection = $false
+            $skipSection = $false
+        }
+
+        if ($skipSection) {
+            continue
+        }
+
         if ($line -match "^INSERT INTO|^SELECT pg_catalog\.setval") {
             continue
         }
-        
-        # Keep DDL
+
         [void]$output.Add($line)
     }
-    
-    $output | Set-Content $tempFile -Encoding UTF8
+
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    $outputText = $output -join "`n"
+    [System.IO.File]::WriteAllText($tempFile, $outputText, $utf8NoBom)
     
     # Compare files (normalize BOM first)
     Write-Host "Comparing generated vs committed $ExpectedFile..." -ForegroundColor Gray
@@ -90,24 +107,13 @@ try {
         $committedContent = $committedContent.Substring(1)
     }
     
-    # Split into lines for comparison
-    $generatedLines = $generatedContent -split "`r?`n" | Where-Object { $_.Trim() -ne '' }
-    $committedLines = $committedContent -split "`r?`n" | Where-Object { $_.Trim() -ne '' }
-    
-    # Use diff if available, otherwise compare hashes
-    $diff = Compare-Object $generatedLines $committedLines
-    
-    if ($diff) {
+    # Match the Bash checker: ignore whitespace-only differences.
+    $generatedNormalized = [regex]::Replace($generatedContent, "\s+", "")
+    $committedNormalized = [regex]::Replace($committedContent, "\s+", "")
+
+    if ($generatedNormalized -ne $committedNormalized) {
         Write-Host ""
         Write-Host "[CHECK FAILED] $ExpectedFile is out of date!" -ForegroundColor Red
-        Write-Host ""
-        Write-Host "The following differences were found:" -ForegroundColor Yellow
-        $diff | Select-Object -First 10 | ForEach-Object {
-            $indicator = if ($_.SideIndicator -eq "<=") { "(generated)" } else { "(committed)" }
-            $color = if ($_.SideIndicator -eq "<=") { "Green" } else { "Red" }
-            $line = $_.InputObject
-            Write-Host "  $indicator`: $line" -ForegroundColor $color
-        }
         Write-Host ""
         Write-Host "To fix this, run:" -ForegroundColor Cyan
         Write-Host '  powershell scripts/generate_schema.ps1' -ForegroundColor White

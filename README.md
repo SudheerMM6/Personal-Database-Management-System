@@ -1,186 +1,165 @@
 # Personal Database Management System
 
-A fully‑structured PostgreSQL 16+ database designed to manage and analyze multiple aspects of personal life — from education and finances to habits, tasks, and travel — with automation, data integrity checks, and analytics views.
+A PostgreSQL database schema for tracking courses, finances, habits, tasks, trips, and users in one structured personal data system.
 
-## ⚡ Quickstart for Reviewers (20 seconds)
+## Project Overview
 
-One command validates everything:
+This project focuses on database design, data integrity, and repeatable validation. It includes a schema-only SQL file, an optional full dump with seed data, pgTAP tests, Docker setup for PostgreSQL, and CI checks for schema validation.
 
-**Windows:**
-```powershell
-powershell scripts/validate_all.ps1
-```
+## What It Covers
 
-**macOS/Linux:**
-```bash
-bash scripts/validate_all.sh
-```
+| Area | Purpose | Main Tables |
+| --- | --- | --- |
+| `course` | Courses, topics, statuses, and progress | `courses`, `course_topics`, `course_statuses` |
+| `finance` | Income and expense tracking | `finances`, `finance_categories`, `finance_types` |
+| `habits` | Habit definitions and logs | `habits`, `habit_categories`, `habit_logs` |
+| `todo` | Tasks, priorities, and statuses | `todos`, `todo_categories`, `task_statuses`, `task_priorities` |
+| `trips` | Trips, routes, and trip expenses | `trips`, `trip_routes`, `trip_expenses` |
+| `user` | Users and roles | `users`, `user_roles` |
 
-**What it checks:**
-1. ✅ `schema.sql` matches source dump
-2. ✅ Schema imports cleanly into PostgreSQL
-3. ✅ 68 pgTAP unit tests pass
+## Database Features
 
-![CI](https://github.com/SudheerMM6/Personal-Database-Management-System/workflows/CI%20-%20Database%20Schema%20Validation/badge.svg)
+- PostgreSQL schemas grouped by domain
+- Primary keys, foreign keys, checks, indexes, functions, triggers, and views
+- Trigger logic for course status updates, task completion dates, amount validation, and `updated_at` timestamps
+- Analytics views for course progress, financial summaries, grades, and trip costs
+- Schema-only setup file for clean installs
+- Optional full dump with seed data for local exploration
 
-## 🗂️  Modular Schema Design
+## Repository Structure
 
-Organized into dedicated schemas for scalability and clarity:
-
-- course – Managing courses and learning topics - `courses`- `course_topics`- `course_statuses`
-- finance – Tracking income and expenses `finances`, `finance_categories`, `finance_types`
-- habits – Tracking habits and categories (tables: `habits`, `habit_categories`, `habit_logs`).
-- todo – Managing tasks and task categories (tables: `todos`, `todo_categories`, `task_statuses`, `task_priorities`).
-- trips – Planning trips, routes, and expenses (tables: `trips`, `trip_routes`, `trip_expenses`).
-
-## ⚙️ Intelligent Features
-
-Triggers and functions are used for automatic updates of statuses, data correctness, and dates:
-
-- `update_course_status` — Updates the course status when topics are modified.
-- `check_finance_amount` — Validates the correctness of amounts for incomes and expenses.
-- `set_completed_date` — Automatically sets the completion date for tasks.
-- `update_updated_at` — Updates the `updated_at` field when changes occur.
-
-## 📊 Built‑In Analytics Views
-
-- `course_progress` — Monitor learning milestones.
-- `financial_summary` — Monthly income/expense breakdown.
-- `course_grades` — Consolidated academic performance.
-- `trip_costs` — Expense tracking per trip.
-
-
-## 🚀 Quick Start (Default: English-Clean Schema)
-
-1. Deploy the database in PostgreSQL version 16 or higher.
-2. Run the schema-only SQL script (English-clean, no sample data):
-   ```bash
-   psql -U your_user -d your_db -f schema.sql
-   ```
-
-### Full Dump with Sample Data (Optional)
-
-For the complete dump including sample data:
-```bash
-psql -U your_user -d your_db -f "Personal base.sql"
-```
-
-### Regenerating schema.sql
-
-`schema.sql` is generated deterministically from `Personal base.sql` by stripping data sections:
-
-**Windows:**
-```powershell
-powershell scripts/generate_schema.ps1
-```
-
-**macOS/Linux:**
-```bash
-bash scripts/generate_schema.sh
-```
-
-The generator:
-- Removes `INSERT INTO` data statements
-- Removes `SELECT pg_catalog.setval()` sequence resets
-- Keeps all DDL (CREATE, ALTER, COMMENT ON, indexes, constraints, functions, views)
-CI will fail if `schema.sql` is out of sync with the source dump:
-```bash
-bash scripts/check_schema_up_to_date.sh
+```text
+PersonalBase.sgl/
+  schema.sql              Clean schema DDL, no seed data
+  Personal base.sql       Full dump with seed data
+  tests/pgtap/            pgTAP structure tests
+  scripts/                Validation and schema generation scripts
+  docker/pgtap/           PostgreSQL image setup for pgTAP
+  docs/                   Architecture and quickstart notes
+  ER.png                  ER diagram reference
 ```
 
 ## Requirements
 
 - PostgreSQL 16 or higher
-- psql command-line tool
+- `psql`
+- Docker, optional but recommended for local validation
+- Bash or PowerShell, depending on your OS
 
-## ✅ One-Command Validation
+## Quick Start
 
-Validate that the SQL imports cleanly:
+Create a database and import the schema:
 
-**Windows:**
+```bash
+psql -U your_user -d your_db -f schema.sql
+```
+
+Import the optional full dump with seed data:
+
+```bash
+psql -U your_user -d your_db -f "Personal base.sql"
+```
+
+## Validation
+
+Run all checks on Windows:
+
 ```powershell
-powershell scripts/validate.ps1
+powershell -ExecutionPolicy Bypass -File scripts/validate_all.ps1
 ```
 
-**macOS/Linux:**
+Run all checks on macOS or Linux:
+
 ```bash
-bash scripts/validate.sh
+bash scripts/validate_all.sh
 ```
 
-**Validate full dump with sample data:**
-```bash
-bash scripts/validate.sh --with-data
-```
+The validation flow checks:
 
-**With Docker (recommended):**
-```bash
-docker-compose up -d
-bash scripts/validate.sh --cleanup
-```
+1. `schema.sql` is in sync with `Personal base.sql`
+2. The schema imports into PostgreSQL with `ON_ERROR_STOP=on`
+3. Smoke tests pass
+4. pgTAP structure tests pass
 
-The validation script uses `ON_ERROR_STOP=on` so any SQL error fails fast. By default, it validates the English-clean `schema.sql`.
+## Schema Generation
 
-## 🧪 Unit Tests (pgTAP)
-
-The repository includes comprehensive pgTAP unit tests that validate schema structure:
-
-- **01_schemas.pg** - All 6 schemas exist
-- **02_tables.pg** - Anchor tables in each schema exist
-- **03_columns.pg** - Critical columns with correct data types
-- **04_constraints.pg** - Primary keys and foreign keys present
-- **05_indexes.pg** - Indexes on key tables
-- **06_functions.pg** - Trigger functions and triggers installed
-- **07_views.pg** - Analytics views exist and are queryable
-
-**Run locally:**
+`schema.sql` is generated from `Personal base.sql` by removing data sections and sequence resets while keeping DDL, constraints, functions, triggers, indexes, views, and comments.
 
 Windows:
+
 ```powershell
-powershell scripts/run_pgtap.ps1
+powershell -ExecutionPolicy Bypass -File scripts/generate_schema.ps1
 ```
 
-macOS/Linux:
+macOS or Linux:
+
+```bash
+bash scripts/generate_schema.sh
+```
+
+Check whether `schema.sql` is current:
+
+```bash
+bash scripts/check_schema_up_to_date.sh
+```
+
+## Tests
+
+The pgTAP tests verify schema structure:
+
+- Schemas exist
+- Main tables exist
+- Important columns use expected data types
+- Primary keys and foreign keys exist
+- Indexes exist on key tables
+- Trigger functions and triggers are installed
+- Analytics views are present and queryable
+
+Run pgTAP tests directly:
+
 ```bash
 bash scripts/run_pgtap.sh
 ```
 
-**CI Pipeline includes:**
-1. Schema import validation (smoke tests)
-2. Invalid object check
-3. **pgTAP unit tests**
+Windows:
 
-## 🔒 CI Pipeline
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run_pgtap.ps1
+```
 
-CI automatically runs the same validation as `validate_all` on every push and PR:
-1. Schema drift check
-2. Schema import validation
-3. Invalid object check
-4. pgTAP unit tests (68 assertions)
+## Docker Setup
 
-## 📦 What's Included
+Start PostgreSQL with pgTAP support:
 
-| File/Folder | Purpose |
-|-------------|---------|
-| `schema.sql` | **Default schema** (English-clean, no data) |
-| `"Personal base.sql"` | Full dump with sample data (optional) |
-| `scripts/validate_all.*` | One-command validation |
-| `tests/pgtap/` | 68 pgTAP unit tests |
-| `.github/workflows/ci.yml` | GitHub Actions CI |
-| `ER.png` | Visual ER diagram (may drift) |
+```bash
+docker-compose up -d postgres
+```
 
-## 📊 ER Diagram
+Stop it after testing:
 
-`ER.png` is a visual aid for understanding table relationships:
+```bash
+docker-compose down
+```
+
+## CI
+
+GitHub Actions runs validation on pushes and pull requests:
+
+- Schema drift check
+- PostgreSQL import
+- Smoke tests
+- pgTAP tests
+
+## ER Diagram
+
+`ER.png` is included as a visual reference.
 
 ![ER Diagram](ER.png)
 
-**Note:** ER.png may drift from the actual schema. The authoritative sources are:
-- `schema.sql` - DDL source of truth
-- `tests/pgtap/*.pg` - 68 structure assertions
+The SQL files and pgTAP tests are the source of truth if the diagram ever differs from the schema.
 
-## Documentation
+## Notes
 
-- `docs/ARCHITECTURE.md` - Schema design & validation overview
-- `docs/REVIEWER_NOTES.md` - Quickstart for reviewers
-- `CONTRIBUTING.md` - PR requirements
-- `scripts/schema_smoke_tests.sql` - Additional validation queries
+- `schema.sql` is the recommended starting point for a clean database.
+- `Personal base.sql` is useful for local demos because it includes seed data.
+- The project is focused on database design and validation, not on an application UI.

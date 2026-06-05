@@ -139,7 +139,7 @@ import_sql() {
     if PGPASSWORD="$DB_PASSWORD" psql --set ON_ERROR_STOP=on --single-transaction \
          -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" \
          -f "$SQL_FILE" 2>&1; then
-        pass "SQL dump imported successfully"
+        pass "SQL dump imported"
     else
         fail "SQL import failed"
         exit 1

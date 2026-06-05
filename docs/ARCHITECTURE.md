@@ -1,50 +1,54 @@
 # Architecture Overview
 
-## What This Is
+## Purpose
 
-A PostgreSQL 16+ database schema for managing personal life data: courses, finances, habits, tasks, and travel.
+PersonalBase is a PostgreSQL schema for organizing personal life data across learning, finance, habits, tasks, trips, and users. The project is designed as a database-first system with repeatable validation.
 
-## Schema Structure
+## Schema Layout
 
-6 modular schemas:
+| Schema | Purpose | Main Tables |
+| --- | --- | --- |
+| `course` | Learning and education | `courses`, `course_topics`, `course_statuses` |
+| `finance` | Income and expenses | `finances`, `finance_categories`, `finance_types` |
+| `habits` | Habit tracking | `habits`, `habit_categories`, `habit_logs` |
+| `todo` | Task management | `todos`, `todo_categories`, `task_statuses`, `task_priorities` |
+| `trips` | Travel planning | `trips`, `trip_routes`, `trip_expenses` |
+| `user` | Users and roles | `users`, `user_roles` |
 
-| Schema | Purpose | Key Tables |
-|--------|---------|------------|
-| `course` | Learning & education | courses, course_topics, course_statuses |
-| `finance` | Income & expenses | finances, finance_categories, finance_types |
-| `habits` | Habit tracking | habits, habit_categories, habit_logs |
-| `todo` | Task management | todos, todo_categories, task_statuses |
-| `trips` | Travel planning | trips, trip_routes, trip_expenses |
-| `user` | User management | users, user_roles |
+## Source Files
 
-## Source of Truth
+Authoritative files:
 
-**Authoritative:**
-- `schema.sql` - English-clean schema DDL
-- `tests/pgtap/*.pg` - 68 pgTAP unit tests
-- `scripts/schema_smoke_tests.sql` - Additional validation
+- `schema.sql`: clean schema DDL without seed data
+- `tests/pgtap/*.pg`: pgTAP structure tests
+- `scripts/schema_smoke_tests.sql`: SQL smoke tests
 
-**Reference only:**
-- `"Personal base.sql"` - Full dump with sample data
-- `ER.png` - Visual diagram (may drift; use pgTAP tests to verify structure)
+Reference files:
 
-## How Validation Works
+- `Personal base.sql`: full dump with seed data
+- `ER.png`: visual diagram
+
+## Validation Flow
 
 ```bash
 bash scripts/validate_all.sh
 ```
 
-Runs 4 steps:
-1. Schema drift check (schema.sql matches generator)
-2. PostgreSQL import test
-3. Smoke tests
-4. pgTAP unit tests (68 assertions)
+Validation runs four checks:
 
-## Extending Safely
+1. Compare `schema.sql` against the generated schema.
+2. Import the schema into PostgreSQL.
+3. Run smoke tests against database objects.
+4. Run pgTAP tests for schemas, tables, columns, constraints, indexes, functions, triggers, and views.
 
-1. Edit `"Personal base.sql"` (source dump)
-2. Regenerate: `bash scripts/generate_schema.sh`
-3. Test: `bash scripts/validate_all.sh`
-4. Commit both files
+## Making Schema Changes
 
-CI will fail if schema.sql drifts from the generator.
+1. Edit `Personal base.sql`.
+2. Regenerate `schema.sql`.
+3. Run validation.
+4. Commit both SQL files if the generated schema changed.
+
+```bash
+bash scripts/generate_schema.sh
+bash scripts/validate_all.sh
+```

@@ -45,15 +45,7 @@ function Test-Command($cmd) {
 
 try {
     Write-Header "PersonalBase Database Validation"
-    
-    Write-Step "Scanning for Cyrillic characters"
-    & "$PSScriptRoot\scan_cyrillic.ps1"
-    if ($LASTEXITCODE -ne 0) {
-        $script:FailedStep = "Cyrillic scan"
-        throw "Cyrillic scan failed"
-    }
-    Write-Success "No Cyrillic in English-clean files"
-    
+
     Write-Step "Checking schema.sql is up to date"
     & "$PSScriptRoot\check_schema_up_to_date.ps1"
     if ($LASTEXITCODE -ne 0) {
@@ -61,7 +53,26 @@ try {
         throw "Schema drift check failed"
     }
     Write-Success "schema.sql is current"
-    
+
+    Write-Step "Validating schema import and smoke tests"
+    $validateArgs = @{}
+    if ($WithData) { $validateArgs["WithData"] = $true }
+    if ($SkipDocker) { $validateArgs["SkipDocker"] = $true }
+    & "$PSScriptRoot\validate.ps1" @validateArgs
+    if ($LASTEXITCODE -ne 0) {
+        $script:FailedStep = "Schema import validation"
+        throw "Schema import validation failed"
+    }
+    Write-Success "Schema import and smoke tests passed"
+
+    Write-Step "Running pgTAP unit tests"
+    & "$PSScriptRoot\run_pgtap.ps1"
+    if ($LASTEXITCODE -ne 0) {
+        $script:FailedStep = "pgTAP unit tests"
+        throw "pgTAP unit tests failed"
+    }
+    Write-Success "pgTAP tests passed"
+
     $duration = (Get-Date) - $script:StartTime
     Write-Header "ALL CHECKS PASSED"
     Write-Host "Duration: $($duration.TotalSeconds.ToString('F1'))s" -ForegroundColor Green
@@ -72,4 +83,9 @@ catch {
     Write-Error "Failed at: $script:FailedStep"
     Write-Host "Error: $_" -ForegroundColor Red
     exit 1
+}
+finally {
+    if ($Cleanup -and -not $SkipDocker -and (Test-Command "docker-compose")) {
+        docker-compose down 2>$null | Out-Null
+    }
 }

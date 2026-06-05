@@ -30,7 +30,6 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Check schema.sql is up to date
-      continue-on-error: true
       run: bash scripts/check_schema_up_to_date.sh
 
     - name: Wait for PostgreSQL
@@ -45,14 +44,14 @@ jobs:
       env:
         PGPASSWORD: postgres
       run: |
-        # Install pgTAP extension files in the running container
-        docker exec $(docker ps -q --filter "ancestor=postgres:16-alpine") sh -c "
+        container_id=$(docker ps -q --filter "ancestor=postgres:16-alpine")
+        docker exec "$container_id" sh -c "
           apk add --no-cache git build-base postgresql16-dev perl-dev perl-app-cpanminus && \
           cd /tmp && \
           git clone https://github.com/theory/pgtap.git && \
           cd pgtap && \
           make && make install
-        " || echo "pgTAP install may have failed, will try anyway"
+        "
 
     - name: Create pgTAP extension
       env:
@@ -70,12 +69,12 @@ jobs:
       env:
         PGPASSWORD: postgres
       run: |
-        echo "=== Importing full database dump ==="
+        echo "=== Importing schema.sql ==="
         psql --set ON_ERROR_STOP=on \
              -h localhost -p 5432 -U postgres \
              -d personalbase_ci \
-             -f "Personal base.sql" || true
-        echo "=== Database import attempted ==="
+             -f schema.sql
+        echo "=== Database import complete ==="
         
         echo "=== Running smoke tests ==="
         psql -h localhost -p 5432 -U postgres -d personalbase_ci \

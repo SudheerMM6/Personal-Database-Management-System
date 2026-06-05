@@ -54,7 +54,7 @@ function Test-PgTapExtension {
         $env:PGPASSWORD = $null
         $result = Invoke-Psql "SELECT 1 FROM pg_extension WHERE extname = 'pgtap';"
         if ($result -match "1") {
-            Write-Pass "pgTAP extension installed successfully"
+            Write-Pass "pgTAP extension installed"
         } else {
             Write-Fail "Failed to install pgTAP extension"
             exit 1

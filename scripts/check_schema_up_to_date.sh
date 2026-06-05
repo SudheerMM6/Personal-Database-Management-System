@@ -76,7 +76,7 @@ strip_bom() {
 strip_bom "$temp_file" "$normalized_temp"
 strip_bom "$EXPECTED_FILE" "$normalized_expected"
 
-# Compare normalized files (ignoring all whitespace differences for robustness)
+# Compare normalized files and ignore whitespace-only differences.
 if diff -w -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
     echo ""
     echo -e "${GREEN}[CHECK PASSED] $EXPECTED_FILE is up to date${NC}"

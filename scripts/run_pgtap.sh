@@ -55,7 +55,7 @@ check_pgtap_extension() {
             -c "CREATE EXTENSION IF NOT EXISTS pgtap;" 2>/dev/null || true
         result=$(psql_cmd "SELECT 1 FROM pg_extension WHERE extname = 'pgtap';")
         if [[ "$result" == *"1"* ]]; then
-            pass "pgTAP extension installed successfully"
+            pass "pgTAP extension installed"
         else
             fail "Failed to install pgTAP extension"
             exit 1

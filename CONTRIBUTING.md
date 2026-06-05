@@ -17,9 +17,8 @@
 
 - All 68 pgTAP tests must pass
 - Schema drift check must pass
-- No Cyrillic in English-clean files
 
 ## Questions?
 
-See `docs/REVIEWER_NOTES.md` for what's tested.
+See `docs/REVIEWER_NOTES.md` for validation notes.
 See `docs/ARCHITECTURE.md` for schema design.
