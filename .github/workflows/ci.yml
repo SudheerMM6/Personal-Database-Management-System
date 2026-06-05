@@ -2,9 +2,9 @@ name: CI - Database Schema Validation
 
 on:
   push:
-    branches: [ main, master, hardening/* ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
   validate-schema:

@@ -3000,16 +3000,16 @@ INSERT INTO "user".user_roles (role_id, name, created_at) VALUES (15, 'Support',
 -- Data for Name: users; Type: TABLE DATA; Schema: user; Owner: postgres
 --
 
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (1, 'arjun_sharma', 'arjun@example.com', 'Arjun', 'Sharma', '2025-05-13 12:24:28.911238', 1);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (2, 'priya_verma', 'priya@example.com', 'Priya', 'Verma', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (3, 'akash_singh', 'akash@example.com', 'Akash', 'Singh', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (4, 'sneha_kapoor', 'sneha@example.com', 'Sneha', 'Kapoor', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (5, 'rohan_mehta', 'rohan@example.com', 'Rohan', 'Mehta', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (6, 'ananya_iyer', 'ananya@example.com', 'Ananya', 'Iyer', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (7, 'vivaan_reddy', 'vivaan@example.com', 'Vivaan', 'Reddy', '2025-05-13 12:24:28.911238', 3);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (8, 'kavya_patel', 'kavya@example.com', 'Kavya', 'Patel', '2025-05-13 12:24:28.911238', 2);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (9, 'rahul_nair', 'rahul@example.com', 'Rahul', 'Nair', '2025-05-13 12:24:28.911238', 4);
-INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (10, 'neha_gupta', 'neha@example.com', 'Neha', 'Gupta', '2025-05-13 12:24:28.911238', 2);    
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (1, 'demo_user_01', 'demo.user01@example.test', 'Demo', 'User01', '2025-05-13 12:24:28.911238', 1);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (2, 'demo_user_02', 'demo.user02@example.test', 'Demo', 'User02', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (3, 'demo_user_03', 'demo.user03@example.test', 'Demo', 'User03', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (4, 'demo_user_04', 'demo.user04@example.test', 'Demo', 'User04', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (5, 'demo_user_05', 'demo.user05@example.test', 'Demo', 'User05', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (6, 'demo_user_06', 'demo.user06@example.test', 'Demo', 'User06', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (7, 'demo_user_07', 'demo.user07@example.test', 'Demo', 'User07', '2025-05-13 12:24:28.911238', 3);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (8, 'demo_user_08', 'demo.user08@example.test', 'Demo', 'User08', '2025-05-13 12:24:28.911238', 2);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (9, 'demo_user_09', 'demo.user09@example.test', 'Demo', 'User09', '2025-05-13 12:24:28.911238', 4);
+INSERT INTO "user".users (user_id, username, email, first_name, last_name, updated_at, role_id) VALUES (10, 'demo_user_10', 'demo.user10@example.test', 'Demo', 'User10', '2025-05-13 12:24:28.911238', 2);
 
 --
 -- TOC entry 5347 (class 0 OID 0)

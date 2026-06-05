@@ -35,7 +35,7 @@ PersonalBase.sgl/
   tests/pgtap/            pgTAP structure tests
   scripts/                Validation and schema generation scripts
   docker/pgtap/           PostgreSQL image setup for pgTAP
-  docs/                   Architecture and quickstart notes
+  docs/                   Architecture and validation notes
   ER.png                  ER diagram reference
 ```
 

@@ -1,4 +1,4 @@
-# Project Quickstart
+# Validation Notes
 
 Run the full validation suite:
 

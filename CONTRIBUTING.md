@@ -20,5 +20,5 @@
 
 ## Questions?
 
-See `docs/REVIEWER_NOTES.md` for validation notes.
+See `docs/VALIDATION.md` for validation notes.
 See `docs/ARCHITECTURE.md` for schema design.
