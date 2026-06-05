@@ -48,6 +48,7 @@ BEGIN {
             data_sections++
         }
     }
+    next
 }
 
 /^COPY / {

@@ -44,8 +44,13 @@ echo -e "${GRAY}Generating temporary schema from '$SOURCE_FILE'...${NC}"
 
 # Generate temp schema (same logic as generate_schema.sh)
 awk '
-    /^--.*Type: TABLE DATA/ { skip_section=1; next }
-    /^--.*Type: SEQUENCE SET/ { skip_section=1; next }
+    /^-- Name:.*Type:.*Schema:.*Owner:/ {
+        skip_section=0
+        if ($0 ~ /Type:[[:space:]]*TABLE DATA/ || $0 ~ /Type:[[:space:]]*SEQUENCE SET/) {
+            skip_section=1
+        }
+        next
+    }
     /^---/ && skip_section { skip_section=0; }
     skip_section { next }
     /^INSERT INTO/ { next }
@@ -55,10 +60,12 @@ awk '
 
 echo -e "${GRAY}Normalizing and comparing...${NC}"
 
-# Create normalized versions (strip UTF-8 BOM if present, ignore trailing whitespace)
+# Create normalized versions (strip UTF-8 BOM if present, ignore whitespace-only differences)
 normalized_temp="${temp_file}.norm"
 normalized_expected="${temp_file}.exp.norm"
-trap "rm -f $temp_file $normalized_temp $normalized_expected" EXIT
+normalized_temp_compact="${normalized_temp}.compact"
+normalized_expected_compact="${normalized_expected}.compact"
+trap "rm -f $temp_file $normalized_temp $normalized_expected $normalized_temp_compact $normalized_expected_compact" EXIT
 
 # Function to strip BOM if present (EF BB BF = 0xEF 0xBB 0xBF)
 strip_bom() {
@@ -75,9 +82,11 @@ strip_bom() {
 
 strip_bom "$temp_file" "$normalized_temp"
 strip_bom "$EXPECTED_FILE" "$normalized_expected"
+tr -d '[:space:]' < "$normalized_temp" > "$normalized_temp_compact"
+tr -d '[:space:]' < "$normalized_expected" > "$normalized_expected_compact"
 
 # Compare normalized files and ignore whitespace-only differences.
-if diff -w -q "$normalized_temp" "$normalized_expected" > /dev/null 2>&1; then
+if diff -q "$normalized_temp_compact" "$normalized_expected_compact" > /dev/null 2>&1; then
     echo ""
     echo -e "${GREEN}[CHECK PASSED] $EXPECTED_FILE is up to date${NC}"
     exit 0
