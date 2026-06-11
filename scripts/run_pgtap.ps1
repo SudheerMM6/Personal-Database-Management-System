@@ -125,7 +125,7 @@ function Run-TestsWithPsql {
 
 # Main execution
 Write-Host "=== pgTAP Unit Tests ===" -ForegroundColor White
-Write-Host "Database: $DbName on $DbHost:$DbPort"
+Write-Host "Database: $DbName on ${DbHost}:$DbPort"
 Write-Host "Test directory: $TestDir"
 
 # Check test directory exists

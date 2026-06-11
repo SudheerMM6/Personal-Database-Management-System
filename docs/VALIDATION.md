@@ -26,10 +26,9 @@ pgTAP tests:
 
 Smoke tests:
 
-- Table count check
-- Foreign key count check
-- Function, view, and trigger checks
-- Invalid object check
+- Exact required schema and table checks
+- Exact foreign key, function, view, and trigger checks
+- Sequence ownership check
 
 Static check:
 

@@ -23,6 +23,7 @@ DB_PORT="${DB_PORT:-5432}"
 CLEANUP="${CLEANUP:-false}"
 SKIP_DOCKER="${SKIP_DOCKER:-false}"
 WITH_DATA="${WITH_DATA:-false}"
+DOCKER_STARTED="${DOCKER_STARTED:-false}"
 
 # Counters
 PASSED=0
@@ -33,6 +34,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+WHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 step() {
@@ -41,12 +43,12 @@ step() {
 
 pass() {
     echo -e "${GREEN}  [PASS] $1${NC}"
-    ((PASSED++))
+    ((PASSED+=1))
 }
 
 fail() {
     echo -e "${RED}  [FAIL] $1${NC}"
-    ((FAILED++))
+    ((FAILED+=1))
 }
 
 cleanup() {
@@ -91,7 +93,7 @@ start_docker() {
                 return
             fi
             sleep 1
-            ((attempt++))
+            ((attempt+=1))
         done
         fail "PostgreSQL failed to start within $max_attempts seconds"
         exit 1

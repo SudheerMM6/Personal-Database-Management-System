@@ -63,7 +63,7 @@ header() {
 }
 
 step() {
-    ((STEP++))
+    ((STEP+=1))
     echo -e "${YELLOW}\n[Step $STEP] $1${NC}"
 }
 
@@ -118,7 +118,7 @@ start_docker() {
             return 0
         fi
         sleep 1
-        ((attempt++))
+        ((attempt+=1))
     done
 
     error "PostgreSQL failed to start within $max_attempts seconds"
@@ -165,7 +165,7 @@ echo -e "${GREEN}Duration: ${DURATION}s${NC}"
 echo -e "${WHITE}\nValidated:${NC}"
 echo -e "${GRAY}  - schema.sql is up to date${NC}"
 echo -e "${GRAY}  - Schema imports cleanly${NC}"
-echo -e "${GRAY}  - 68 pgTAP unit tests passed${NC}"
+echo -e "${GRAY}  - pgTAP unit tests passed${NC}"
 echo -e "${GREEN}\nThe database schema is ready.${NC}"
 
 exit 0

@@ -76,8 +76,10 @@ run_tests_with_pg_prove() {
     export PGUSER="$DB_USER"
     export PGDATABASE="$DB_NAME"
     
+    set +e
     pg_prove -d "$DB_NAME" "$TEST_DIR"/*.pg
     local exit_code=$?
+    set -e
     
     unset PGPASSWORD PGHOST PGPORT PGUSER PGDATABASE
     
@@ -103,11 +105,11 @@ run_tests_with_psql() {
             # Parse TAP output
             while IFS= read -r line; do
                 if [[ "$line" =~ ^ok\ [0-9]+ ]]; then
-                    ((passed_tests++))
-                    ((total_tests++))
+                    ((passed_tests+=1))
+                    ((total_tests+=1))
                 elif [[ "$line" =~ ^not\ ok\ [0-9]+ ]]; then
-                    ((failed_tests++))
-                    ((total_tests++))
+                    ((failed_tests+=1))
+                    ((total_tests+=1))
                     fail "Test failed in $basename: $line"
                 elif [[ "$line" =~ ^1\.\.([0-9]+) ]]; then
                     echo -e "${GRAY}    Planned tests: ${BASH_REMATCH[1]}${NC}"

@@ -82,26 +82,13 @@ jobs:
 
     - name: Run pgTAP unit tests
       env:
-        PGPASSWORD: postgres
-        PGHOST: localhost
-        PGPORT: 5432
-        PGUSER: postgres
-        PGDATABASE: personalbase_ci
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        DB_NAME: personalbase_ci
       run: |
-        echo "=== Running pgTAP tests with psql ==="
-        # Run each test file individually and show results
-        failed=0
-        for test_file in tests/pgtap/*.pg; do
-          echo ""
-          echo "Running: $test_file"
-          if ! psql -h localhost -p 5432 -U postgres -d personalbase_ci -f "$test_file" 2>&1; then
-            echo "WARNING: $test_file had issues"
-            failed=1
-          fi
-        done
-        echo ""
-        echo "=== pgTAP test run complete ==="
-        exit $failed
+        bash scripts/run_pgtap.sh
 
     - name: Schema validation summary
       if: always()
